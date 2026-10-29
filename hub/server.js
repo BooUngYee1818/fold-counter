@@ -51,7 +51,7 @@ function save() {
     fs.renameSync(tmp, DATA_FILE);
     writeTextFiles();
   } catch (e) {
-    console.error('저장 실패:', e.message);
+    console.error('Save failed / 저장 실패:', e.message);
   }
 }
 function safeName(s) {
@@ -267,17 +267,19 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   const addrs = lanAddresses();
-  console.log('========================================');
-  console.log(' 폴더블 카운터 허브 실행 중  (포트 ' + PORT + ')');
-  console.log('========================================');
-  console.log(' 관리 페이지 :  http://localhost:' + PORT + '/admin');
-  console.log(' 오버레이    :  http://localhost:' + PORT + '/overlay   <- OBS / XSplit 브라우저 소스');
+  console.log('================================================');
+  console.log(' Fold Counter hub is running  (port ' + PORT + ')');
+  console.log(' 폴더블 카운터 허브 실행 중   (포트 ' + PORT + ')');
+  console.log('================================================');
+  console.log(' Admin page / 관리 페이지 :  http://localhost:' + PORT + '/admin');
+  console.log(' Overlay    / 오버레이    :  http://localhost:' + PORT + '/overlay   <- OBS / XSplit browser source');
   if (addrs.length) {
-    console.log(' 이 PC 의 LAN 주소 (폰에서 수동 연결할 때):');
+    console.log(' LAN address of this PC (for manual connection) / 이 PC 의 LAN 주소 (수동 연결용):');
     for (const a of addrs) console.log('   ' + a + ':' + PORT);
   }
-  console.log(' 폰 앱은 같은 Wi-Fi 에서 자동으로 이 허브를 찾습니다. (UDP ' + DISCOVERY_PORT + ')');
-  console.log(' 종료: Ctrl + C');
+  console.log(' Phone apps find this hub automatically on the same Wi-Fi (UDP ' + DISCOVERY_PORT + ').');
+  console.log(' 폰 앱은 같은 Wi-Fi 에서 자동으로 이 허브를 찾습니다.');
+  console.log(' Quit / 종료: Ctrl + C');
   console.log('');
   save();
 });
@@ -289,7 +291,7 @@ udp.on('message', (msg, rinfo) => {
     udp.send(`${DISCOVERY_REPLY} ${PORT}`, rinfo.port, rinfo.address);
   }
 });
-udp.on('error', (e) => console.warn('자동 검색(UDP) 오류:', e.message, '- 폰에서 IP 를 직접 입력하면 됩니다.'));
+udp.on('error', (e) => console.warn('Discovery (UDP) error / 자동 검색 오류:', e.message, '- enter the IP manually in the app / 폰에서 IP 를 직접 입력하면 됩니다.'));
 udp.bind(DISCOVERY_PORT);
 
 process.on('SIGINT', () => { save(); process.exit(0); });

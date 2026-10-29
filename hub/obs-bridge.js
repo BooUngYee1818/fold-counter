@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 'use strict';
-// OBS 자동 연동 프로그램
-// 허브에 폰이 연결되면 OBS 에 "폴더블 카운터" 브라우저 소스를 자동으로 만들고 켭니다.
-// 폰이 모두 끊기면 (옵션) 소스를 끕니다. OBS 28 이상의 내장 WebSocket 서버(v5)를 사용합니다.
+// OBS auto-connect bridge
+// When a phone connects to the hub, creates and enables a "Fold Counter" browser source in OBS.
+// Optionally hides it when every phone is disconnected. Uses the built-in WebSocket server (v5) of OBS 28+.
+// OBS 자동 연동 프로그램: 허브에 폰이 연결되면 OBS 에 브라우저 소스를 자동으로 만들고 켭니다.
 //
 // 준비: OBS → 도구 → WebSocket 서버 설정 → 서버 활성화 (비밀번호가 있으면 --password 로 전달)
 // 사용: node obs-bridge.js [--hub http://localhost:8787] [--obs ws://localhost:4455] [--password 비밀번호]
@@ -19,7 +20,7 @@ const opt = {
   obs: 'ws://localhost:4455',
   password: '',
   scene: '',
-  name: '폴더블 카운터',
+  name: 'Fold Counter',
   width: 1920,
   height: 1080,
   overlay: '',
@@ -40,7 +41,7 @@ for (let i = 0; i < args.length; i++) {
 if (!opt.overlay) opt.overlay = opt.hub + '/overlay';
 
 if (typeof WebSocket === 'undefined') {
-  console.error('Node.js 22 이상이 필요합니다 (내장 WebSocket). 현재:', process.version);
+  console.error('Node.js 22 or later is required (built-in WebSocket) / Node.js 22 이상이 필요합니다. Current:', process.version);
   process.exit(1);
 }
 
@@ -58,7 +59,7 @@ class Obs {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(this.url, 'obswebsocket.json');
       this.ws = ws;
-      ws.onerror = () => reject(new Error('OBS 에 연결할 수 없습니다: ' + this.url));
+      ws.onerror = () => reject(new Error('Cannot connect to OBS / OBS 에 연결할 수 없습니다: ' + this.url));
       ws.onclose = () => { this.ready = false; for (const p of this.pending.values()) p.reject(new Error('OBS 연결 종료')); this.pending.clear(); };
       ws.onmessage = (ev) => {
         const msg = JSON.parse(ev.data);
@@ -66,7 +67,7 @@ class Obs {
           // Hello
           const d = { rpcVersion: 1, eventSubscriptions: 0 };
           if (msg.d.authentication) {
-            if (!this.password) return reject(new Error('OBS WebSocket 에 비밀번호가 설정되어 있습니다. --password 로 전달하세요.'));
+            if (!this.password) return reject(new Error('OBS WebSocket has a password. Pass it with --password / OBS WebSocket 에 비밀번호가 설정되어 있습니다. --password 로 전달하세요.'));
             const { challenge, salt } = msg.d.authentication;
             const secret = crypto.createHash('sha256').update(this.password + salt).digest('base64');
             d.authentication = crypto.createHash('sha256').update(secret + challenge).digest('base64');
@@ -113,7 +114,7 @@ async function ensureSource(obs) {
       inputSettings: { url: opt.overlay, width: opt.width, height: opt.height, shutdown: false, restart_when_active: false },
       sceneItemEnabled: true,
     });
-    console.log(`OBS 장면 "${sceneName}" 에 브라우저 소스 "${opt.name}" 을 만들었습니다 → ${opt.overlay}`);
+    console.log(`Created browser source "${opt.name}" in OBS scene "${sceneName}" / 브라우저 소스를 만들었습니다 → ${opt.overlay}`);
     item = { sceneItemId: res.sceneItemId, sourceName: opt.name, sceneItemEnabled: true };
   } else {
     await obs.call('SetInputSettings', { inputName: opt.name, inputSettings: { url: opt.overlay }, overlay: true });
@@ -124,7 +125,7 @@ async function ensureSource(obs) {
 async function main() {
   const obs = new Obs(opt.obs, opt.password);
   await obs.connect();
-  console.log('OBS 연결됨:', opt.obs);
+  console.log('Connected to OBS / OBS 연결됨:', opt.obs);
   let src = await ensureSource(obs);
   let lastEnabled = null;
   let lastOnline = null;
@@ -134,18 +135,18 @@ async function main() {
       const s = await hubState();
       const online = s.devices.filter((d) => d.online).length;
       if (online !== lastOnline) {
-        console.log(new Date().toLocaleTimeString('ko-KR', { hour12: false }), '연결된 폰:', online, online ? s.devices.filter((d) => d.online).map((d) => `${d.displayName} ${d.count}`).join(', ') : '');
+        console.log(new Date().toLocaleTimeString([], { hour12: false }), 'phones online / 연결된 폰:', online, online ? s.devices.filter((d) => d.online).map((d) => `${d.displayName} ${d.count}`).join(', ') : '');
         lastOnline = online;
       }
       const wantEnabled = online > 0 || !opt.hideWhenIdle;
       if (wantEnabled !== lastEnabled) {
         if (!obs.ready) { await obs.connect(); src = await ensureSource(obs); }
         await obs.call('SetSceneItemEnabled', { sceneName: src.sceneName, sceneItemId: src.sceneItemId, sceneItemEnabled: wantEnabled });
-        console.log(wantEnabled ? '오버레이 켬' : '오버레이 끔 (연결된 폰 없음)');
+        console.log(wantEnabled ? 'Overlay shown / 오버레이 켬' : 'Overlay hidden, no phone online / 오버레이 끔 (연결된 폰 없음)');
         lastEnabled = wantEnabled;
       }
     } catch (e) {
-      console.warn('오류:', e.message);
+      console.warn('Error / 오류:', e.message);
       lastEnabled = null;
       if (!obs.ready) { try { await obs.connect(); src = await ensureSource(obs); } catch (_) {} }
     }

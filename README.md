@@ -1,120 +1,120 @@
-# 폴더블 카운터 (Fold Counter)
+# Fold Counter (폴더블 카운터)
 
-폴더블 폰을 **접었다 펼칠 때마다 1회** 세고, 그 숫자를 라이브 방송(OBS / XSplit) 자막으로 띄우는 도구입니다.
-구형부터 신형까지 모든 폴더블 폰(플립형, 폴드형, 듀얼스크린, 트라이폴드)을 목표로 합니다.
+[한국어](README.ko.md) | **English**
 
-> **현재 상태**: 안드로이드 앱 + PC 허브 공개. **아이폰 앱은 테스트 버전(서명 전 IPA)** 을 함께 올립니다. 폴더블 아이폰 실기기 확인은 아직입니다.
-> APK 는 안드로이드 전용이라 아이폰에는 설치되지 않습니다. 아이폰은 아래 "아이폰" 항목을 보세요.
-
-*English: Counts every fold → unfold of a foldable phone and shows it as a live caption in OBS / XSplit through a small PC hub on your Wi-Fi. Android app (Android 9+) and an iPhone test build (unsigned IPA, iOS 17+) are included. No accounts, no analytics, nothing leaves your network. UI follows the device language (Korean / English).*
+Counts **one every time a foldable phone is folded and unfolded**, and shows the number as a live caption in your stream (OBS / XSplit).
+Built for every foldable, old and new: flip style, book style, dual screen and tri-fold.
 
 ```
-[폰 앱 A] ─┐
-[폰 앱 B] ─┼─ 같은 Wi-Fi ─> [PC 허브]  ─> http://localhost:8787/overlay  (OBS / XSplit 브라우저 소스)
-[폰 앱 C] ─┘                    ├─> /admin   (이름 수정, 카운트 조정, 자막 모양)
-                                └─> data/text/기기이름.txt  (텍스트 소스용)
+[phone app A] ─┐
+[phone app B] ─┼─ same Wi-Fi ─> [PC hub]  ─> http://localhost:8787/overlay  (OBS / XSplit browser source)
+[phone app C] ─┘                    ├─> /admin   (rename devices, adjust counts, caption style)
+                                    └─> data/text/<device>.txt  (for text sources)
 ```
 
-| 폴더 | 내용 |
+> **Status**: Android app + PC hub are released. An **iPhone test build** (unsigned IPA) is included; it has not been verified on a real foldable iPhone yet.
+> An APK is Android-only and cannot be installed on an iPhone. See the "iPhone" section below.
+
+| Folder | What it is |
 |---|---|
-| `hub/` | PC 허브 서버 (Node.js, 외부 패키지 없음). 오버레이·관리 페이지·OBS 자동 연동·시뮬레이터 포함 |
-| `android/` | 안드로이드 앱 (Kotlin). Android 9 이상 |
-| `ios/` | 아이폰 앱 (SwiftUI, iOS 17 이상). 테스트 버전 |
-| `.github/workflows/` | git push 때 APK 와 아이폰 IPA 를 자동으로 빌드하는 GitHub Actions 설정 |
+| `hub/` | PC hub server (Node.js, no dependencies). Overlay, admin page, OBS auto-connect, fake-phone simulator |
+| `android/` | Android app (Kotlin), Android 9 and up |
+| `ios/` | iPhone app (SwiftUI, iOS 17 and up), test build |
+| `.github/workflows/` | GitHub Actions: builds the APK and the iPhone IPA on every push |
 
-## 개인정보
-- 계정, 로그인, 광고, 분석(애널리틱스), 외부 서버가 **전혀 없습니다.**
-- 폰 앱이 보내는 정보는 **기기 이름, 모델명, 카운트**뿐이고, 같은 Wi-Fi 안의 내 PC 허브로만 갑니다.
-- 기기 식별자는 앱 설치 때 만드는 무작위 ID 입니다. IMEI, 전화번호, 광고 ID 등은 읽지 않습니다.
-- 앱 권한: 인터넷(허브와 LAN 통신), 포그라운드 서비스(접어도 감지 유지), 알림(실행 중 표시). 그 외 권한 없음.
+## Privacy
+- **No account, no login, no ads, no analytics, no external server.**
+- The phone app sends only the **device name, model and count**, and only to your own hub on the same Wi-Fi.
+- The device identifier is a random ID created when the app is installed. IMEI, phone number and advertising ID are never read.
+- App permissions: Internet (LAN talk with the hub), foreground service (keep detecting while folded), notifications (running indicator). Nothing else.
 
-## 빠른 시작
+## Quick start
 
-### 1. PC 허브 실행
-1. [Node.js](https://nodejs.org) LTS 설치 (Windows / macOS)
-2. `hub/start-hub.bat` (Windows) 또는 `hub/start-hub.command` (macOS) 더블클릭. 터미널이라면 `cd hub && node server.js`
-3. Windows 방화벽이 물으면 **개인 네트워크 허용**
-4. 브라우저에서 `http://localhost:8787/admin` 열기
+### 1. Run the PC hub
+1. Install [Node.js](https://nodejs.org) LTS (Windows / macOS).
+2. Double-click `hub/start-hub.bat` (Windows) or `hub/start-hub.command` (macOS). From a terminal: `cd hub && node server.js`.
+3. If the Windows firewall asks, **allow on private networks**.
+4. Open `http://localhost:8787/admin` in a browser.
 
-### 2. OBS / XSplit 에 자막 넣기
-- **OBS**: 소스 추가 → 브라우저 → URL 에 `http://localhost:8787/overlay` → 너비 1920, 높이 1080
-- **XSplit**: 소스 추가 → 웹페이지 → 같은 URL
-- 관리 페이지의 "자막 모양"에서 크기·색·정렬·제작자 표시 위치를 바꾸면 주소가 함께 바뀝니다. 기기 하나만 보이는 주소도 있어서 기기마다 자막 위치를 따로 잡을 수 있습니다.
-- 텍스트 소스를 쓰려면 `hub/data/text/기기이름.txt` 를 "파일에서 읽기"로 지정
+### 2. Add the caption to OBS / XSplit
+- **OBS**: Add source → Browser → URL `http://localhost:8787/overlay` → width 1920, height 1080.
+- **XSplit**: Add source → Webpage → same URL.
+- In the admin page, "Caption style" changes size, colors, alignment and the credit position; the URL updates with it. There is also a per-device URL so each device can be placed separately.
+- Prefer a text source? Point "read from file" at `hub/data/text/<device name>.txt`.
 
-### 3. 폰 앱 설치 (안드로이드)
-1. APK 다운로드: 이 저장소의 **Releases** 페이지 (또는 Actions 탭의 최신 빌드 Artifacts). 폰으로 옮겨 설치하면 됩니다 (출처를 알 수 없는 앱 허용 필요). 개발자는 `adb install` 로도 가능.
-2. 첫 실행: 기기 이름 확인 → 허브가 자동으로 잡히는지 확인 → **카운팅 시작**
-3. 검은 화면에 숫자가 뜹니다. 접었다 펼치면 1 올라가고 PC 자막도 함께 바뀝니다.
+### 3. Install the phone app (Android)
+1. Download the APK from this repository's **Releases** page (or the latest build's Artifacts in the Actions tab). Copy it to the phone and install (allow apps from unknown sources). Developers can `adb install`.
+2. First launch: confirm the device name → check that the hub was found automatically → **Start counting**.
+3. A black screen with a number appears. Fold and unfold: the number goes up on the phone and in the stream caption.
 
-### 4. 라이브 직전: 버튼 차단
-앱이 스스로 홈·전원 버튼을 막는 건 안드로이드/iOS 모두 허용하지 않습니다. 대신 OS 의 앱 고정 기능을 씁니다.
-- 화면을 빠르게 **5번 탭** → 메뉴 → **앱 고정**. 시스템 확인창("앱 고정")에서 확인을 누르면 고정됩니다.
-- 앱은 확인창이 뜨고 사용자가 누를 때까지 최대 15초 기다립니다. 그 안에 고정되지 않으면 설정 › 보안 의 "앱 고정"(화면 고정)을 켜라는 안내를 띄우고 설정으로 보내줍니다. 기기에 따라 이 설정이 먼저 필요할 수 있습니다.
-- 고정 해제: 뒤로가기 + 최근 앱 버튼을 동시에 길게 (제스처 내비게이션은 위로 쓸어올려 길게).
-- 전원 버튼은 막을 수 없지만, 화면이 꺼져도 접힘 감지와 카운트는 계속됩니다.
+### 4. Right before going live: block the buttons
+Neither Android nor iOS lets an app block the Home or power buttons by itself, so the OS "pin app" feature is used.
+- Tap the screen **5 times quickly** → menu → **Pin this app**. Confirm the system prompt.
+- Some phones need "Pin windows" (Screen pinning) enabled once under Settings › Security; the app tells you and opens the settings.
+- To unpin: hold Back and Recents together (gesture navigation: swipe up and hold).
+- The power button cannot be blocked, but detection and counting continue even while the screen is off.
 
-## 폰 앱 기능
-- **메뉴**: 화면 5번 탭 → 앱 고정 / 진단 / 설정 / 테스트(접기→펼치기 1회) / 카운트 0 으로
-- **진단**: 어떤 감지 방식이 잡혔는지, 힌지 각도가 실시간으로 바뀌는지, 허브 연결 상태, 최근 이벤트
-- **설정**: 기기 이름, 허브 자동/수동, 감지 방식, 접힘·펼침 기준 각도, 트라이폴드 기준, 제작자 표시 시간, 제작자 문구
-- **제작자 표시**: 기기를 몇 분(기본 3분) 만지지도 움직이지도 않으면 화면 위쪽에 "폴더블 카운터 / 제작 YouTube @CEO_BooungYee-TeCh" 가 뜨고, 움직이면 사라집니다
-- **언어**: 기기 언어가 한국어면 한국어, 아니면 영어 (자동)
-- **카운트 보존**: 폰과 허브 양쪽에 저장. 앱이 꺼지거나 허브가 재시작돼도 유지. 허브와 끊긴 동안의 접힘은 모아뒀다가 다시 연결되면 전송
+## Phone app features
+- **Menu**: 5 quick taps → Pin app / Diagnostics / Settings / Test (fold → unfold once) / Reset count to 0
+- **Diagnostics**: which detection method is active, live hinge angle, hub connection, recent events
+- **Settings**: device name, hub auto/manual, detection method, closed/open angle thresholds, tri-fold rule, credit idle time, credit text
+- **Credit**: after a few idle minutes (default 3) with no touch or movement, "Fold Counter / made by YouTube @CEO_BooungYee-TeCh" appears at the top of the screen; it disappears when the phone moves
+- **Language**: Korean if the phone language is Korean, otherwise English (automatic)
+- **Count never lost**: stored on the phone and on the hub. Survives app kills and hub restarts. Folds that happen while disconnected are queued and sent when the hub is back
 
-## 접힘 감지 방식
-앱이 기기에서 되는 방식을 자동으로 고릅니다. 결과는 모두 열림/닫힘으로 통일하고, **닫힘 → 열림** 순간에 1 올립니다.
+## Fold detection
+The app picks whatever works on the device. Every method is normalized to open/closed, and the count goes up at the **closed → open** moment.
 
-| 순위 | 방식 | 대상 | 비고 |
+| Priority | Method | Devices | Notes |
 |---|---|---|---|
-| 1 | 힌지 각도 센서 | Android 11+ 거의 모든 폴더블 (Z 폴드2/플립 이후, 픽셀 폴드, 서피스 듀오, 원플러스 오픈 등) | 30° 아래 접힘, 150° 위 펼침 (설정에서 조절). 반쯤 접힌 플렉스 모드는 세지 않음 |
-| 2 | 화면 상태 | 센서가 없는 구형 (1세대 갤럭시 폴드, 레이저 2019 등) | 화면이 꺼지거나 커버 화면으로 바뀌면 접힘. 전원 버튼으로 껐다 켜도 1회로 세므로 앱 고정 상태에서 사용 |
+| 1 | Hinge angle sensor | Almost every foldable on Android 11+ (Z Fold2/Flip and later, Pixel Fold, Surface Duo, OnePlus Open, …) | Closed below 30°, open above 150° (adjustable). Half-folded "flex mode" is not counted |
+| 2 | Screen state | Old devices without the sensor (1st-gen Galaxy Fold, razr 2019, …) | Screen off or switching to the cover screen counts as closed. The power button also counts as a fold here, so use it with app pinning |
 
-- 서피스 듀오처럼 360° 까지 도는 기기는 0° 근처만 접힘으로 봅니다.
-- 트라이폴드는 설정에서 "힌지 하나라도 접히면" / "모두 접혀야" 중 선택.
-- 화웨이 HarmonyOS NEXT(중국 내수 메이트 XT 등)는 안드로이드 앱 자체가 실행되지 않아 범위 밖입니다. EMUI 기기는 APK 설치로 동작합니다.
+- Devices that open to 360° (Surface Duo) count as closed only near 0°.
+- Tri-fold: choose in Settings whether "any hinge closed" or "all hinges closed" means closed.
+- Huawei HarmonyOS NEXT (China-only Mate XT etc.) cannot run Android apps at all and is out of scope. EMUI devices work with the APK.
 
-## 폴더블 기기 없이 테스트하기
-- **가짜 폰 시뮬레이터**: `cd hub && node tools/simulate.js 3` → 가짜 폰 3대가 등록되고 몇 초마다 접힘을 보냅니다. 오버레이·관리 페이지·OBS 연동을 그대로 확인할 수 있습니다.
-- **앱 테스트 모드**: 어떤 안드로이드 폰에서든 앱 메뉴의 "테스트: 접기 → 펼치기 1회"로 전체 흐름(앱 → 허브 → 자막)을 확인
-- **에뮬레이터**: Android Studio 의 기기 관리자에서 폴더블(Pixel Fold, 7.6" Fold-in 등)을 만들면 힌지 각도 센서가 포함됩니다. 확장 제어 → Virtual sensors → Hinge angle 로 접고 펼 수 있어 실제 감지 경로를 테스트할 수 있습니다. 명령줄에서는 `adb emu sensor set hinge-angle0 0` (접힘) → `adb emu sensor set hinge-angle0 180` (펼침) 으로 1회가 올라갑니다. 에뮬레이터 안에서는 UDP 자동 검색이 PC 까지 못 가므로 앱 설정에서 허브 주소를 `10.0.2.2` 로 직접 입력하세요.
-- 이 저장소의 안드로이드 앱은 Android 16 Pixel Fold 에뮬레이터에서 접힘 카운트, 허브 전송, 앱 고정, 제작자 표시, 한국어/영어 전환까지 확인했습니다. 아이폰 앱은 컴파일과 서명 전 IPA 생성까지 확인했고 실행 테스트는 아직입니다. 실제 폴더블 기기에서의 확인은 두 플랫폼 모두 아직입니다.
+## Testing without a foldable
+- **Fake-phone simulator**: `cd hub && node tools/simulate.js 3` registers 3 fake phones that send folds every few seconds. Use it to check the overlay, the admin page and the OBS connection.
+- **In-app test mode**: on any Android phone, the menu item "Test: simulate fold → unfold" exercises the whole path (app → hub → caption).
+- **Emulator**: in Android Studio's Device Manager, create a foldable (Pixel Fold, 7.6" Fold-in, …); it has a hinge angle sensor. Extended controls → Virtual sensors → Hinge angle folds and unfolds it. From the command line, `adb emu sensor set hinge-angle0 0` (fold) then `adb emu sensor set hinge-angle0 180` (unfold) adds one. Inside the emulator, UDP discovery cannot reach the PC, so enter `10.0.2.2` as the hub address in the app settings.
+- The Android app in this repository was verified on an Android 16 Pixel Fold emulator: fold counting, hub sync, app pinning, credit overlay, Korean/English switching. The iPhone app was verified up to compiling and producing an unsigned IPA. Neither has been tested on a physical foldable yet.
 
-## OBS 자동 연동 (선택)
-허브에 폰이 연결되면 OBS 에 브라우저 소스를 자동으로 만들고 켭니다.
-1. OBS 28 이상: 도구 → WebSocket 서버 설정 → 서버 활성화
-2. `cd hub && node obs-bridge.js --password 비밀번호` (옵션: `--scene "장면"`, `--hide-when-idle` 폰이 모두 끊기면 자막 끄기)
-XSplit 은 공개 자동화 API 가 없어 수동으로 웹페이지 소스를 넣어야 합니다.
+## OBS auto-connect (optional)
+When a phone connects to the hub, a browser source is created and enabled in OBS automatically.
+1. OBS 28 or later: Tools → WebSocket Server Settings → Enable.
+2. `cd hub && node obs-bridge.js --password <password>` (options: `--scene "<scene>"`, `--hide-when-idle` to hide the caption when no phone is connected).
+XSplit has no public automation API, so add the webpage source manually.
 
-## 로고 넣기
-녹색 배경(크로마키) 로고 이미지를 그대로 넣으면 녹색을 자동으로 빼고 표시합니다.
-- 방송 자막: `hub/public/logo.png`
-- 폰 화면(제작자 표시): `android/app/src/main/assets/logo.png` 넣고 다시 빌드
+## Adding a logo
+Drop a green-screen (chroma key) logo image in; the green background is removed automatically.
+- Stream caption: `hub/public/logo.png`
+- Phone screen (credit panel): `android/app/src/main/assets/logo.png`, then rebuild
 
-## 직접 빌드
-- **허브**: 빌드 없음. Node.js 18 이상 (OBS 연동은 22 이상)
-- **안드로이드**: Android Studio 로 `android/` 열기 → Run. 또는 `cd android && ./gradlew assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk`
-- **GitHub Actions**: 이 저장소를 GitHub 에 올리면 push 할 때마다 APK 와 아이폰 IPA 가 자동으로 빌드됩니다. `v0.1.0` 처럼 `v` 로 시작하는 태그를 푸시하면 Releases 에 둘 다 자동으로 첨부됩니다.
-- **아이폰**: Xcode 로 `ios/FoldCounter.xcodeproj` 열기 → 본인 Apple ID 팀 선택 → 아이폰 연결 → Run. 자세한 내용은 `ios/README.md`
+## Building it yourself
+- **Hub**: no build step. Node.js 18 or later (22 or later for the OBS bridge).
+- **Android**: open `android/` in Android Studio → Run. Or `cd android && ./gradlew assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk`.
+- **GitHub Actions**: every push builds the APK and the iPhone IPA. Pushing a tag that starts with `v` (for example `v0.1.0`) attaches both to a Release automatically.
+- **iPhone**: open `ios/FoldCounter.xcodeproj` in Xcode → choose your Apple ID team → connect the iPhone → Run. Details in `ios/README.md`.
 
-## 아이폰 (테스트 버전)
-아이폰용 앱은 `ios/` 에 있고, 안드로이드 앱과 같은 화면 구성과 허브 통신을 갖습니다. 같은 자막에 함께 표시됩니다.
+## iPhone (test build)
+The iPhone app lives in `ios/` and has the same screens and hub protocol as the Android app, so it appears in the same caption.
 
-- **설치**: 아이폰은 APK 처럼 파일만 넣어서 설치할 수 없습니다. 두 가지 방법이 있습니다.
-  1. Xcode 로 `ios/FoldCounter.xcodeproj` 열기 → Signing & Capabilities 에서 본인 Apple ID 팀 선택 → 아이폰 연결 → Run. 무료 계정은 7일마다 다시 설치해야 합니다.
-  2. Releases 의 `FoldCounter-ios-*-unsigned.ipa` 를 Sideloadly 나 AltStore 같은 사이드로드 도구로 본인 Apple ID 로 서명해서 설치.
-- **접힘 감지**: iOS 에는 공개된 힌지 센서 API 가 없어서 커버 화면 ↔ 내부 화면의 화면 크기 변화와, 접혀서 앱이 잠드는 것을 접힘으로 판정합니다. 폴더블 아이폰 실기기에서는 아직 확인하지 못했습니다. 일반 아이폰에서는 메뉴의 테스트 항목으로 허브 전송까지의 흐름을 확인할 수 있습니다.
-- **버튼 차단**: 사용법 유도(Guided Access)를 씁니다. 앱이 꺼져 있는지 감지해서 "사이드 버튼 3번 클릭 → 시작" 안내를 띄우고, 켜지면 안내가 사라집니다. 처음 한 번은 설정 › 손쉬운 사용 › 사용법 유도를 켜야 합니다.
-- **첫 실행 때 "로컬 네트워크" 권한**을 물어봅니다. 허브를 찾기 위한 것이니 허용해주세요.
+- **Install**: an iPhone cannot install a file the way Android installs an APK. Two options:
+  1. Open `ios/FoldCounter.xcodeproj` in Xcode → Signing & Capabilities → pick your Apple ID team → connect the iPhone → Run. A free Apple ID needs a reinstall every 7 days.
+  2. Take `FoldCounter-ios-*-unsigned.ipa` from Releases and sideload it with a tool such as Sideloadly or AltStore, signed with your own Apple ID.
+- **Fold detection**: iOS has no public hinge sensor API, so the app treats the switch between the cover screen and the inner screen, and the app being put to sleep by folding, as "closed". It has not been verified on a real foldable iPhone yet. On a regular iPhone, the menu's test item exercises the path to the hub.
+- **Blocking buttons**: Guided Access. The app detects whether it is off and shows "triple-click the side button → Start"; the hint disappears once it is on. Enable Settings › Accessibility › Guided Access once.
+- The first launch asks for the **Local Network** permission. It is needed to find the hub; please allow it.
 
-## 문제 해결
-- **허브를 못 찾음**: PC 와 폰이 같은 Wi-Fi 인지, PC 방화벽에서 Node 가 허용됐는지 확인. 공유기의 "AP 격리/클라이언트 분리"가 켜져 있으면 관리 페이지의 LAN 주소를 앱 설정에 직접 입력
-- **앱 고정이 안 됨**: 설정 › 보안 › 앱 고정(화면 고정) 켜기
-- **카운트가 안 올라감**: 진단 화면에서 각도가 바뀌는지 확인. 기기가 완전히 안 펼쳐지면 펼침 기준 각도를 150 → 130 정도로 낮추기. 센서가 없으면 화면 상태 방식으로 자동 전환
-- **자막에 이름을 바꾸고 싶음**: 관리 페이지에서 이름칸 수정 (폰 화면에도 반영)
+## Troubleshooting
+- **Hub not found**: make sure the PC and the phone are on the same Wi-Fi and that Node is allowed through the PC firewall. If the router has "AP isolation / client isolation" on, type the LAN address shown in the admin page into the app settings.
+- **Cannot pin the app**: enable Settings › Security › Pin windows (Screen pinning).
+- **Count does not go up**: check in Diagnostics that the angle changes. If the device does not open fully, lower the "open" threshold from 150 to about 130. Without a sensor the app falls back to screen state automatically.
+- **Want a different caption name**: edit the name field in the admin page (it updates on the phone too).
 
-## 라이선스
-MIT License. `LICENSE` 파일 참고.
+## License
+MIT License. See `LICENSE`.
 
 ---
-제작: YouTube @CEO_BooungYee-TeCh
+Made by YouTube @CEO_BooungYee-TeCh

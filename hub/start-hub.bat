@@ -3,6 +3,7 @@ chcp 65001 >nul
 cd /d "%~dp0"
 where node >nul 2>nul
 if errorlevel 1 (
+  echo Node.js is not installed. Install the LTS version from https://nodejs.org
   echo Node.js 가 설치되어 있지 않습니다. https://nodejs.org 에서 LTS 버전을 설치해주세요.
   pause
   exit /b 1

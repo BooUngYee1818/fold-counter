@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 'use strict';
+// Fake-phone simulator for testing the hub and overlay without a foldable device.
+// Usage: node tools/simulate.js [count] [--hub http://localhost:8787] [--interval 4]
+//   Registers <count> fake phones and sends a fold every 2..(interval*2) seconds.
 // 폴더블 기기가 없을 때 허브와 오버레이를 테스트하는 가짜 폰 시뮬레이터.
 // 사용: node tools/simulate.js [기기 수] [--hub http://localhost:8787] [--interval 4]
-//   기기 수 만큼 가짜 폰을 등록하고, 2~(interval*2)초 간격으로 접힘 이벤트를 보냅니다.
 
 const args = process.argv.slice(2);
 const opt = { count: 2, hub: 'http://localhost:8787', interval: 4 };
@@ -35,10 +37,10 @@ async function main() {
     const c = CATALOG[i];
     const d = { deviceId: 'sim-' + (i + 1), ...c, platform: 'simulator', osVersion: '-', detector: 'simulated', appVersion: 'sim', count: 0 };
     const res = await api('/api/register', d);
-    console.log('등록:', res.device.displayName, '현재 카운트', res.device.count);
+    console.log('Registered / 등록:', res.device.displayName, 'count', res.device.count);
     devices.push(d);
   }
-  console.log(`\n${devices.length}개 기기 시뮬레이션 중. 오버레이: ${opt.hub}/overlay  관리: ${opt.hub}/admin  (종료 Ctrl+C)\n`);
+  console.log(`\nSimulating ${devices.length} device(s) / ${devices.length}개 기기 시뮬레이션 중.  Overlay: ${opt.hub}/overlay  Admin: ${opt.hub}/admin  (Ctrl+C to quit)\n`);
 
   setInterval(async () => {
     for (const d of devices) {
@@ -50,7 +52,7 @@ async function main() {
     const tick = async () => {
       try {
         const res = await api('/api/fold', { deviceId: d.deviceId, delta: 1 });
-        console.log(new Date().toLocaleTimeString('ko-KR', { hour12: false }), '접었다 펼침:', res.device.displayName, '→', res.device.count);
+        console.log(new Date().toLocaleTimeString([], { hour12: false }), 'fold / 접었다 펼침:', res.device.displayName, '→', res.device.count);
       } catch (e) { console.warn(e.message); }
       setTimeout(tick, (2 + Math.random() * opt.interval * 2) * 1000);
     };
@@ -58,4 +60,4 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error('허브에 연결할 수 없습니다:', e.message); process.exit(1); });
+main().catch((e) => { console.error('Cannot reach the hub / 허브에 연결할 수 없습니다:', e.message); process.exit(1); });
