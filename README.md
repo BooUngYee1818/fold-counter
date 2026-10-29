@@ -41,6 +41,7 @@ Built for every foldable, old and new: flip style, book style, dual screen and t
 - **XSplit**: Add source → Webpage → same URL.
 - In the admin page, "Caption style" changes size, colors, alignment and the credit position; the URL updates with it. There is also a per-device URL so each device can be placed separately.
 - Prefer a text source? Point "read from file" at `hub/data/text/<device name>.txt`.
+- No foldable at hand? Open `http://localhost:8787/demo` for an interactive simulator of the phone screen, the cover screen and the live caption.
 
 ### 3. Install the phone app (Android)
 1. Download the APK from this repository's **Releases** page (or the latest build's Artifacts in the Actions tab). Copy it to the phone and install (allow apps from unknown sources). Developers can `adb install`.

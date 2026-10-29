@@ -175,6 +175,7 @@ const server = http.createServer(async (req, res) => {
     if (p === '/') { res.writeHead(302, { Location: '/admin' }); return res.end(); }
     if (p === '/admin') return serveStatic(res, 'admin.html');
     if (p === '/overlay') return serveStatic(res, 'overlay.html');
+    if (p === '/demo') return serveStatic(res, 'demo.html'); // 폴더블 없이 체험해보는 시뮬레이터 페이지
     if (p === '/logo.png') return serveStatic(res, 'logo.png'); // public/logo.png 가 있으면 자막에 로고 표시
 
     if (p === '/api/ping') return send(res, 200, { ok: true, hub: 'foldcounter', port: PORT, version: '0.1.0' });
