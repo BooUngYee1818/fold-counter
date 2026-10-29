@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>폴더블 카운터 오버레이</title>
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg, transparent); overflow: hidden; height: 100%; }
+  body {
+    font-family: var(--font);
+    color: var(--color);
+    font-weight: 800;
+  }
+  #list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12em;
+    padding: 0.25em 0.4em;
+    align-items: var(--align);
+    font-size: var(--size);
+  }
+  .row, .credit {
+    line-height: 1.15;
+    white-space: nowrap;
+    -webkit-text-stroke: var(--strokew) var(--stroke);
+    paint-order: stroke fill;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+  }
+  .row.offline { opacity: var(--offline-opacity); }
+  .name { margin-right: 0.35em; }
+  .count { display: inline-block; }
+  .count.pop { animation: pop 0.35s ease-out; }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  /* 제작자 표시: 방송 화면을 가리지 않도록 구석에 작게 */
+  .credit {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    gap: 0.55em;
+    font-size: var(--creditsize);
+    opacity: 0.92;
+    margin: 0.6em 0.8em;
+  }
+  .credit.br { right: 0; bottom: 0; }
+  .credit.bl { left: 0; bottom: 0; }
+  .credit.tr { right: 0; top: 0; }
+  .credit.tl { left: 0; top: 0; }
+  .credit img { height: 2.6em; width: auto; display: block; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
+  .credit .app { font-weight: 800; }
+  .credit .by { font-weight: 600; font-size: 0.82em; opacity: 0.9; }
+  .credit[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div id="list"></div>
+<div id="credit" class="credit br" hidden>
+  <img id="creditLogo" alt="" hidden>
+  <div>
+    <div class="app" id="creditApp"></div>
+    <div class="by" id="creditBy"></div>
+  </div>
+</div>
+<script>
+  // 주소 뒤에 옵션을 붙여 모양을 바꿀 수 있습니다. 예)
+  //   /overlay?size=96&color=ffff00&stroke=000000&align=center
+  //   /overlay?device=<기기ID>          특정 기기 하나만
+  //   /overlay?name=0                    기기 이름 숨기고 숫자만
+  //   /overlay?offline=hide              연결 끊긴 기기 숨김
+  //   /overlay?credit=0                  제작자 표시 끔   creditpos=br|bl|tr|tl   creditsize=18   creditname=@...
+  //   /overlay?lang=en                   표시 언어 (기본: 브라우저 언어)
+  const q = new URLSearchParams(location.search);
+  const color = (v, d) => { if (!v) return d; return /^[0-9a-f]{3,8}$/i.test(v) ? '#' + v : v; };
+  const lang = (q.get('lang') || navigator.language || 'ko').toLowerCase().startsWith('ko') ? 'ko' : 'en';
+  const L = { ko: { app: '폴더블 카운터', by: '제작' }, en: { app: 'Fold Counter', by: 'made by' } }[lang];
+  const opt = {
+    device: q.get('device'),
+    size: (q.get('size') || '72').replace(/[^0-9.]/g, '') + 'px',
+    color: color(q.get('color'), '#ffffff'),
+    stroke: color(q.get('stroke'), '#000000'),
+    strokew: q.get('strokew') || '0.07em',
+    align: { left: 'flex-start', center: 'center', right: 'flex-end' }[q.get('align') || 'left'] || 'flex-start',
+    showName: q.get('name') !== '0',
+    font: q.get('font') || "'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', sans-serif",
+    offline: q.get('offline') || 'dim',
+    bg: color(q.get('bg'), 'transparent'),
+    credit: q.get('credit') !== '0',
+    creditPos: ['br', 'bl', 'tr', 'tl'].includes(q.get('creditpos')) ? q.get('creditpos') : 'br',
+    creditSize: (q.get('creditsize') || '18').replace(/[^0-9.]/g, '') + 'px',
+    creditName: q.get('creditname') || '@CEO_BooungYee-TeCh',
+  };
+  const root = document.documentElement.style;
+  root.setProperty('--size', opt.size);
+  root.setProperty('--color', opt.color);
+  root.setProperty('--stroke', opt.stroke);
+  root.setProperty('--strokew', opt.strokew);
+  root.setProperty('--align', opt.align);
+  root.setProperty('--font', opt.font);
+  root.setProperty('--bg', opt.bg);
+  root.setProperty('--offline-opacity', opt.offline === 'dim' ? '0.5' : '1');
+  root.setProperty('--creditsize', opt.creditSize);
+
+  const list = document.getElementById('list');
+  const prev = {};
+  const el = (tag, cls, text) => { const e = document.createElement(tag); e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+
+  function render(s) {
+    let devs = s.devices || [];
+    if (opt.device) devs = devs.filter((d) => d.id === opt.device);
+    if (opt.offline === 'hide') devs = devs.filter((d) => d.online);
+    list.innerHTML = '';
+    for (const d of devs) {
+      const row = el('div', 'row' + (d.online ? '' : ' offline'));
+      if (opt.showName) row.append(el('span', 'name', d.displayName));
+      const c = el('span', 'count', String(d.count));
+      if (prev[d.id] !== undefined && prev[d.id] !== d.count) c.classList.add('pop');
+      row.append(c);
+      list.append(row);
+      prev[d.id] = d.count;
+    }
+  }
+
+  // ---- 제작자 표시 (프로그램명 위, 제작자 아래) ----
+  function setupCredit() {
+    if (!opt.credit) return;
+    const box = document.getElementById('credit');
+    box.className = 'credit ' + opt.creditPos;
+    document.getElementById('creditApp').textContent = L.app;
+    document.getElementById('creditBy').textContent = L.by + ' ' + opt.creditName;
+    box.hidden = false;
+    // public/logo.png 가 있으면 녹색(크로마키) 배경을 빼고 로고로 표시
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const cv = document.createElement('canvas');
+        cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+        const ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const id = ctx.getImageData(0, 0, cv.width, cv.height);
+        const px = id.data;
+        for (let i = 0; i < px.length; i += 4) {
+          const r = px[i], g = px[i + 1], b = px[i + 2];
+          const greenness = g - Math.max(r, b);
+          if (greenness > 60) px[i + 3] = 0;
+          else if (greenness > 20) px[i + 3] = Math.round(px[i + 3] * (1 - (greenness - 20) / 40));
+        }
+        ctx.putImageData(id, 0, 0);
+        const out = document.getElementById('creditLogo');
+        out.src = cv.toDataURL('image/png');
+        out.hidden = false;
+      } catch (_) {}
+    };
+    img.src = '/logo.png';
+  }
+
+  function connect() {
+    const es = new EventSource('/api/events');
+    es.addEventListener('state', (e) => { try { render(JSON.parse(e.data)); } catch (_) {} });
+    es.onerror = () => { es.close(); setTimeout(connect, 2000); };
+  }
+  setupCredit();
+  fetch('/api/state').then((r) => r.json()).then(render).catch(() => {});
+  connect();
+</script>
+</body>
+</html>

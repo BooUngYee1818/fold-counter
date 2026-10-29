@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 같은 Wi-Fi 안의 PC 허브와 통신하기 위해서만 사용합니다. 외부 서버로는 아무것도 보내지 않습니다. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 접었을 때 화면이 꺼지거나 앱이 가려져도 접힘 감지를 계속하기 위한 포그라운드 서비스 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <uses-feature android:name="android.hardware.sensor.hinge_angle" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FoldCounter"
+        android:usesCleartextTraffic="true">
+
+        <activity
+            android:name=".ui.SetupActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.CounterActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|uiMode|keyboardHidden"
+            android:exported="false"
+            android:launchMode="singleTask" />
+
+        <activity android:name=".ui.SettingsActivity" android:exported="false" />
+        <activity android:name=".ui.DiagnosticsActivity" android:exported="false" />
+
+        <service
+            android:name=".FoldService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Counts fold/unfold cycles of a foldable phone with the hinge sensor for live streaming" />
+        </service>
+    </application>
+</manifest>

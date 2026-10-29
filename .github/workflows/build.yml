@@ -1,0 +1,77 @@
+# git push 할 때마다 안드로이드 APK 와 아이폰 서명 전 IPA 를 자동으로 빌드합니다.
+# - 결과물: Actions 탭 → 해당 실행 → Artifacts 에서 다운로드
+# - v0.1.0 처럼 v 로 시작하는 태그를 푸시하면 Releases 에 APK 가 자동으로 첨부됩니다.
+name: Build apps
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Name the APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk "FoldCounter-${GITHUB_REF_NAME//\//-}-debug.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FoldCounter-debug-apk
+          path: android/FoldCounter-*-debug.apk
+
+      - name: Attach APK to release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: android/FoldCounter-*-debug.apk
+
+  build-ios:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build unsigned IPA
+        run: |
+          xcodebuild -project FoldCounter.xcodeproj -target FoldCounter -sdk iphoneos -configuration Release \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            SYMROOT="$PWD/build" OBJROOT="$PWD/build/obj" build
+          rm -rf build/Payload && mkdir -p build/Payload
+          cp -R build/Release-iphoneos/FoldCounter.app build/Payload/
+          (cd build && zip -qr "../FoldCounter-ios-${GITHUB_REF_NAME//\//-}-unsigned.ipa" Payload)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FoldCounter-ios-unsigned-ipa
+          path: ios/FoldCounter-ios-*-unsigned.ipa
+
+      - name: Attach IPA to release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ios/FoldCounter-ios-*-unsigned.ipa

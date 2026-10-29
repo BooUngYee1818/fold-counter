@@ -1,0 +1,29 @@
+# Node
+hub/node_modules/
+hub/data/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/.kotlin/
+android/*.iml
+android/app/*.iml
+
+# iOS
+ios/build/
+ios/DerivedData/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcworkspace/xcuserdata/
+
+# 빌드 산출물은 GitHub Releases 로 올립니다
+dist/
+*.apk
+*.aab
+*.ipa
+
+# OS
+.DS_Store
+Thumbs.db

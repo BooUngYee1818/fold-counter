@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Fold Counter</string>
+    <string name="credit_prefix">made by</string>
+    <string name="credit_default">YouTube @CEO_BooungYee-TeCh</string>
+
+    <!-- notification -->
+    <string name="notif_channel">Fold detection</string>
+    <string name="notif_title">Fold Counter is running</string>
+    <string name="notif_text">Count %1$d · %2$s</string>
+
+    <!-- detectors -->
+    <string name="detector_hinge">Hinge angle sensor</string>
+    <string name="detector_display">Screen state (fallback)</string>
+    <string name="detector_simulated">Simulated</string>
+    <string name="posture_unknown">Unknown</string>
+    <string name="posture_open">Open</string>
+    <string name="posture_half">Half open</string>
+    <string name="posture_closed">Closed</string>
+
+    <!-- hub -->
+    <string name="hub_searching">Searching for the PC hub on this Wi-Fi…</string>
+    <string name="hub_connected">Connected: %1$s</string>
+    <string name="hub_error">Hub connection lost, retrying…</string>
+
+    <!-- setup -->
+    <string name="setup_desc">Counts one every time the phone is folded and unfolded. The count is sent to the PC hub on the same Wi-Fi and shown as a caption in OBS / XSplit.</string>
+    <string name="setup_name_label">Device name (shown in the caption)</string>
+    <string name="setup_detector_label">Fold detection</string>
+    <string name="setup_not_foldable">No hinge sensor found. Fallback detection (screen state) will be used. On a non-foldable phone you can still try the test mode from the menu.</string>
+    <string name="setup_hub_label">PC hub</string>
+    <string name="setup_manual_title">Connect manually (if not found automatically)</string>
+    <string name="setup_host_hint">Hub IP, e.g. 192.168.0.10</string>
+    <string name="setup_port_hint">Port</string>
+    <string name="setup_manual_connect">Connect to this address</string>
+    <string name="setup_auto_connect">Back to automatic search</string>
+    <string name="setup_privacy">Privacy: no account, no analytics, no internet upload. Only device name, model and the count go to your own hub on the local network.</string>
+    <string name="setup_start">Start counting</string>
+
+    <!-- counter -->
+    <string name="counter_hint">Menu: tap the screen 5 times quickly</string>
+    <string name="menu_pin">Pin this app (block Home / Recents)</string>
+    <string name="menu_unpin">Unpin this app</string>
+    <string name="menu_diagnostics">Diagnostics</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_test_fold">Test: simulate fold → unfold (+1)</string>
+    <string name="menu_reset">Reset count to 0</string>
+    <string name="pin_started">Pinned. To unpin: hold Back and Recents together (gesture nav: swipe up and hold).</string>
+    <string name="pin_stopped">Unpinned.</string>
+    <string name="pin_failed_title">Could not pin the app</string>
+    <string name="pin_failed_msg">Enable \"Pin windows\" (also called Screen pinning / Pin app) in Settings › Security, then try again.</string>
+    <string name="open_settings">Open security settings</string>
+    <string name="reset_title">Reset count?</string>
+    <string name="reset_msg">The count on this phone and on the hub will be set to 0.</string>
+    <string name="yes">Yes</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="saved">Saved</string>
+
+    <!-- settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_name">Device name</string>
+    <string name="settings_hub">PC hub connection</string>
+    <string name="settings_hub_auto">Find automatically on this Wi-Fi</string>
+    <string name="settings_hub_manual">Use this address</string>
+    <string name="settings_detector">Fold detection method</string>
+    <string name="settings_detector_auto">Automatic (recommended)</string>
+    <string name="settings_closed_angle">Counts as closed below (degrees)</string>
+    <string name="settings_open_angle">Counts as open above (degrees)</string>
+    <string name="settings_multi">Devices with two hinges (tri-fold)</string>
+    <string name="settings_multi_any">Closed when any hinge is closed</string>
+    <string name="settings_multi_all">Closed only when all hinges are closed</string>
+    <string name="settings_show_name">Show device name on this screen</string>
+    <string name="settings_idle">Show credit after idle (minutes, 0 = off)</string>
+    <string name="settings_credit">Credit text</string>
+
+    <!-- diagnostics -->
+    <string name="diag_title">Diagnostics</string>
+    <string name="diag_reconnect">Search hub again</string>
+    <string name="diag_test">Simulate fold (+1)</string>
+    <string name="diag_body">Detection: %1$s\nDetail: %2$s\nPosture: %3$s\nWindow posture: %4$s\n\nHub: %5$s\nPending folds: %6$d\nCount: %7$d\nDevice ID: %8$s\nModel: %9$s\nAndroid: %10$s\n\nRecent events:\n%11$s</string>
+
+    <!-- log lines (diagnostics) -->
+    <string name="log_detector">Detection method: %1$s</string>
+    <string name="log_closed">Closed (%1$s)</string>
+    <string name="log_unfold">Unfolded → %1$d (%2$s)</string>
+    <string name="log_reset">Count reset</string>
+    <string name="log_hub_connected">Hub connected: %1$s</string>
+    <string name="log_hub_error">Hub error: %1$s</string>
+    <string name="log_sync_failed">Count sync failed: %1$s</string>
+</resources>

@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fold Counter Hub</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #111; color: #eee; font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', sans-serif; font-size: 15px; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #999; margin: 0 0 24px; font-size: 13px; }
+  .card { background: #1b1b1b; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .card h2 { font-size: 15px; margin: 0 0 12px; color: #bbb; font-weight: 600; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+  .url { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
+  .url code { background: #0d0d0d; padding: 6px 10px; border-radius: 6px; word-break: break-all; }
+  button { background: #2b2b2b; color: #eee; border: 1px solid #3a3a3a; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 14px; }
+  button:hover { background: #363636; }
+  button.danger { color: #ff8a80; border-color: #5a2b2b; }
+  button.small { padding: 4px 9px; font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #262626; vertical-align: middle; }
+  th { color: #888; font-weight: 600; font-size: 12px; }
+  td.count { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; width: 90px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #555; margin-right: 6px; }
+  .dot.on { background: #00e676; box-shadow: 0 0 8px #00e676aa; }
+  input[type=text], input[type=number], select { background: #0d0d0d; color: #eee; border: 1px solid #333; border-radius: 6px; padding: 6px 8px; font-size: 14px; }
+  input.name { width: 200px; }
+  .meta { color: #888; font-size: 12px; }
+  .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .opts label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #999; }
+  .preview { margin-top: 12px; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a2a; background: repeating-conic-gradient(#222 0 25%, #1a1a1a 0 50%) 0 0 / 24px 24px; }
+  .preview iframe { width: 100%; height: 220px; border: 0; display: block; }
+  .empty { color: #777; padding: 24px 8px; text-align: center; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; padding: 10px 16px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .credit { color: #777; font-size: 12px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1 data-i18n="title"></h1>
+      <p class="sub" data-i18n="sub"></p>
+    </div>
+    <div>
+      <select id="langSel"><option value="ko">한국어</option><option value="en">English</option></select>
+      <div class="credit" id="creditLine"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="urlTitle"></h2>
+    <div class="url"><span class="meta" style="width:110px" data-i18n="allDevices"></span><code id="overlayAll"></code><button class="small" data-copy="overlayAll" data-i18n="copy"></button><a id="overlayOpen" target="_blank"><button class="small" data-i18n="openNew"></button></a></div>
+    <div class="meta" style="margin-top:8px" data-i18n-html="howTo"></div>
+    <div class="meta" style="margin-top:8px" data-i18n-html="textSource"></div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="styleTitle"></h2>
+    <div class="opts">
+      <label><span data-i18n="optSize"></span><input type="number" id="optSize" value="72" min="10" max="400"></label>
+      <label><span data-i18n="optColor"></span><input type="text" id="optColor" value="#ffffff"></label>
+      <label><span data-i18n="optStroke"></span><input type="text" id="optStroke" value="#000000"></label>
+      <label><span data-i18n="optAlign"></span><select id="optAlign"><option value="left" data-i18n="left"></option><option value="center" data-i18n="center"></option><option value="right" data-i18n="right"></option></select></label>
+      <label><span data-i18n="optName"></span><select id="optName"><option value="1" data-i18n="show"></option><option value="0" data-i18n="numbersOnly"></option></select></label>
+      <label><span data-i18n="optOffline"></span><select id="optOffline"><option value="dim" data-i18n="dim"></option><option value="show" data-i18n="asIs"></option><option value="hide" data-i18n="hide"></option></select></label>
+      <label><span data-i18n="optCredit"></span><select id="optCredit"><option value="1" data-i18n="show"></option><option value="0" data-i18n="hide"></option></select></label>
+      <label><span data-i18n="optCreditPos"></span><select id="optCreditPos"><option value="br" data-i18n="br"></option><option value="bl" data-i18n="bl"></option><option value="tr" data-i18n="tr"></option><option value="tl" data-i18n="tl"></option></select></label>
+      <label><span data-i18n="optCreditSize"></span><input type="number" id="optCreditSize" value="18" min="8" max="120"></label>
+    </div>
+    <div class="preview"><iframe id="preview"></iframe></div>
+    <div class="meta" style="margin-top:6px" data-i18n-html="styleNote"></div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="devicesTitle"></h2>
+    <div id="devices"></div>
+    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
+      <button class="danger" id="resetAll" data-i18n="resetAll"></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="manualTitle"></h2>
+    <div class="meta" data-i18n="manualNote"></div>
+    <div id="addrs" style="margin-top:8px"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const CREATOR = '@CEO_BooungYee-TeCh';
+  const I18N = {
+    ko: {
+      title: '폴더블 카운터 허브',
+      sub: '폰 앱이 접었다 펼친 횟수를 모아서 방송 자막으로 보냅니다. 수집되는 데이터는 기기 이름, 모델명, 카운트뿐이며 이 PC 밖으로 나가지 않습니다.',
+      madeBy: '제작',
+      urlTitle: 'OBS / XSplit 에 넣을 주소', allDevices: '전체 기기', copy: '복사', openNew: '새 창에서 보기',
+      howTo: 'OBS: 소스 추가 → 브라우저 → URL 에 붙여넣기 → 너비 1920, 높이 1080 권장.<br>XSplit: 소스 추가 → 웹페이지 → URL 붙여넣기. 배경은 투명합니다.<br>OBS 자동 연동: <code>node obs-bridge.js</code> (README 참고)',
+      textSource: '텍스트 소스를 쓰는 경우: <code>hub/data/text</code> 폴더의 <code>기기이름.txt</code> 를 "파일에서 읽기"로 지정하면 됩니다.<br>로고: <code>hub/public/logo.png</code> 를 넣으면 자막 구석에 로고가 표시됩니다 (녹색 배경 자동 제거).',
+      styleTitle: '자막 모양', optSize: '글자 크기 (px)', optColor: '글자색', optStroke: '외곽선색', optAlign: '정렬',
+      left: '왼쪽', center: '가운데', right: '오른쪽', optName: '기기 이름', show: '표시', numbersOnly: '숫자만',
+      optOffline: '연결 끊긴 기기', dim: '흐리게', asIs: '그대로', hide: '숨김',
+      optCredit: '제작자 표시', optCreditPos: '제작자 위치', br: '오른쪽 아래', bl: '왼쪽 아래', tr: '오른쪽 위', tl: '왼쪽 위', optCreditSize: '제작자 글자 크기 (px)',
+      styleNote: '위 옵션을 바꾸면 "OBS / XSplit 에 넣을 주소" 와 기기별 주소가 함께 바뀝니다.',
+      devicesTitle: '기기 목록', resetAll: '모든 카운트 0 으로',
+      manualTitle: '폰에서 수동으로 연결할 때', manualNote: '앱이 허브를 자동으로 못 찾으면 (공유기 설정 등) 앱 설정에서 아래 주소 중 하나를 직접 입력하세요.',
+      noLan: 'LAN 주소를 찾지 못했습니다. Wi-Fi 또는 유선 연결을 확인하세요.',
+      empty: '아직 연결된 기기가 없습니다. 폰에서 앱을 실행하면 여기에 나타납니다.',
+      thStatus: '상태', thName: '이름 (자막에 표시) · 정보 · 이 기기만 보이는 주소', thCount: '카운트', thAdjust: '조정',
+      online: '연결됨', offline: '끊김', detect: '감지', lastFold: '마지막 접힘', copyUrl: '주소 복사',
+      setValue: '값 입력', toZero: '0 으로', remove: '목록에서 삭제',
+      copied: '복사했습니다', saved: '이름을 저장했습니다', error: '오류',
+      promptCount: '카운트 값', confirmReset: '이 기기의 카운트를 0 으로 만들까요?',
+      confirmRemove: '목록에서 삭제할까요? 폰 앱이 다시 연결되면 0 부터 다시 나타납니다.', confirmResetAll: '모든 기기의 카운트를 0 으로 만들까요?',
+    },
+    en: {
+      title: 'Fold Counter Hub',
+      sub: 'Collects fold/unfold counts from the phone apps and shows them as a stream caption. Only device name, model and count are stored, and nothing leaves this PC.',
+      madeBy: 'made by',
+      urlTitle: 'URL for OBS / XSplit', allDevices: 'All devices', copy: 'Copy', openNew: 'Open in new window',
+      howTo: 'OBS: Add source → Browser → paste URL → 1920 × 1080 recommended.<br>XSplit: Add source → Webpage → paste URL. Background is transparent.<br>OBS auto-connect: <code>node obs-bridge.js</code> (see README)',
+      textSource: 'Using a text source instead: point "read from file" at <code>hub/data/text/&lt;device name&gt;.txt</code>.<br>Logo: put <code>hub/public/logo.png</code> to show a logo in the corner (green background removed automatically).',
+      styleTitle: 'Caption style', optSize: 'Font size (px)', optColor: 'Text color', optStroke: 'Outline color', optAlign: 'Align',
+      left: 'Left', center: 'Center', right: 'Right', optName: 'Device name', show: 'Show', numbersOnly: 'Numbers only',
+      optOffline: 'Disconnected devices', dim: 'Dim', asIs: 'As is', hide: 'Hide',
+      optCredit: 'Credit', optCreditPos: 'Credit position', br: 'Bottom right', bl: 'Bottom left', tr: 'Top right', tl: 'Top left', optCreditSize: 'Credit font size (px)',
+      styleNote: 'Changing these options updates the URL above and the per-device URLs.',
+      devicesTitle: 'Devices', resetAll: 'Reset all counts to 0',
+      manualTitle: 'Connecting a phone manually', manualNote: 'If the app cannot find the hub automatically (router settings etc.), type one of these addresses in the app settings.',
+      noLan: 'No LAN address found. Check Wi-Fi or Ethernet.',
+      empty: 'No devices yet. Start the app on a phone and it will appear here.',
+      thStatus: 'Status', thName: 'Name (shown in caption) · info · URL for this device only', thCount: 'Count', thAdjust: 'Adjust',
+      online: 'Online', offline: 'Offline', detect: 'detection', lastFold: 'last fold', copyUrl: 'Copy URL',
+      setValue: 'Set value', toZero: 'Set 0', remove: 'Remove from list',
+      copied: 'Copied', saved: 'Name saved', error: 'Error',
+      promptCount: 'Count value', confirmReset: 'Reset this device\'s count to 0?',
+      confirmRemove: 'Remove from the list? It will reappear from 0 when the phone reconnects.', confirmResetAll: 'Reset every device\'s count to 0?',
+    },
+  };
+  let lang = localStorage.getItem('fc-lang') || ((navigator.language || 'ko').toLowerCase().startsWith('ko') ? 'ko' : 'en');
+  const t = (k) => (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k;
+
+  const $ = (s) => document.querySelector(s);
+  let state = { hub: { port: location.port, addresses: [] }, devices: [] };
+  let toastTimer;
+  function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 1600); }
+  async function api(method, path, body) {
+    const r = await fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+    if (!r.ok) { let m = r.statusText; try { m = (await r.json()).error || m; } catch (_) {} throw new Error(m); }
+    return r.json();
+  }
+  function applyI18n() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-html]').forEach((el) => { el.innerHTML = t(el.dataset.i18nHtml); });
+    $('#langSel').value = lang;
+    $('#creditLine').textContent = t('madeBy') + ' ' + CREATOR;
+  }
+  function overlayQuery(deviceId) {
+    const p = new URLSearchParams();
+    const size = $('#optSize').value, color = $('#optColor').value.trim(), stroke = $('#optStroke').value.trim();
+    if (size && size !== '72') p.set('size', size);
+    if (color && color !== '#ffffff') p.set('color', color.replace('#', ''));
+    if (stroke && stroke !== '#000000') p.set('stroke', stroke.replace('#', ''));
+    if ($('#optAlign').value !== 'left') p.set('align', $('#optAlign').value);
+    if ($('#optName').value === '0') p.set('name', '0');
+    if ($('#optOffline').value !== 'dim') p.set('offline', $('#optOffline').value);
+    if ($('#optCredit').value === '0') p.set('credit', '0');
+    if ($('#optCreditPos').value !== 'br') p.set('creditpos', $('#optCreditPos').value);
+    if ($('#optCreditSize').value !== '18') p.set('creditsize', $('#optCreditSize').value);
+    if (lang !== 'ko') p.set('lang', lang);
+    if (deviceId) p.set('device', deviceId);
+    const qs = p.toString();
+    return location.origin + '/overlay' + (qs ? '?' + qs : '');
+  }
+  function renderUrls() {
+    const all = overlayQuery(null);
+    $('#overlayAll').textContent = all;
+    $('#overlayOpen').href = all;
+    if ($('#preview').dataset.src !== all) { $('#preview').dataset.src = all; $('#preview').src = all; }
+    document.querySelectorAll('[data-dev-url]').forEach((c) => { c.textContent = overlayQuery(c.dataset.devUrl); });
+  }
+  function fmtTime(ts) { if (!ts) return '-'; return new Date(ts).toLocaleTimeString(lang === 'ko' ? 'ko-KR' : 'en-US', { hour12: false }); }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function renderDevices() {
+    const box = $('#devices');
+    if (!state.devices.length) { box.innerHTML = `<div class="empty">${t('empty')}</div>`; return; }
+    const rows = state.devices.map((d, i) => `
+      <tr data-id="${esc(d.id)}">
+        <td><span class="dot ${d.online ? 'on' : ''}"></span>${d.online ? t('online') : t('offline')}</td>
+        <td>
+          <input class="name" type="text" value="${esc(d.displayName)}" data-rename placeholder="${esc(d.name || d.model)}">
+          <div class="meta">${esc(d.manufacturer || '')} ${esc(d.model || '')} · ${esc(d.platform || '')} ${esc(d.osVersion || '')} · ${t('detect')}: ${esc(d.detector || '-')} · ${t('lastFold')} ${fmtTime(d.lastFoldAt)}</div>
+          <div class="url"><code class="mono" data-dev-url="${esc(d.id)}"></code><button class="small" data-copy-dev="${esc(d.id)}">${t('copyUrl')}</button></div>
+        </td>
+        <td class="count">${d.count}</td>
+        <td>
+          <div class="row-actions">
+            <button class="small" data-delta="-1">-1</button>
+            <button class="small" data-delta="1">+1</button>
+            <button class="small" data-setcount>${t('setValue')}</button>
+            <button class="small danger" data-reset>${t('toZero')}</button>
+          </div>
+          <div class="row-actions" style="margin-top:6px">
+            <button class="small" data-move="-1" ${i === 0 ? 'disabled' : ''}>▲</button>
+            <button class="small" data-move="1" ${i === state.devices.length - 1 ? 'disabled' : ''}>▼</button>
+            <button class="small danger" data-remove>${t('remove')}</button>
+          </div>
+        </td>
+      </tr>`).join('');
+    box.innerHTML = `<table><thead><tr><th>${t('thStatus')}</th><th>${t('thName')}</th><th>${t('thCount')}</th><th>${t('thAdjust')}</th></tr></thead><tbody>${rows}</tbody></table>`;
+    renderUrls();
+  }
+  function renderHub() {
+    const port = state.hub.port;
+    $('#addrs').innerHTML = (state.hub.addresses || []).map((a) => `<div class="url"><code>${esc(a)}:${port}</code></div>`).join('') || `<div class="meta">${t('noLan')}</div>`;
+  }
+  function render(s) {
+    const focused = document.activeElement && document.activeElement.matches('[data-rename]') ? document.activeElement.closest('tr').dataset.id : null;
+    const typing = focused ? document.activeElement.value : null;
+    state = s;
+    renderHub();
+    renderDevices();
+    if (focused) { const inp = document.querySelector(`tr[data-id="${focused}"] [data-rename]`); if (inp) { inp.value = typing; inp.focus(); } }
+  }
+
+  document.addEventListener('click', async (e) => {
+    const b = e.target.closest('button, a');
+    if (!b) return;
+    const tr = b.closest('tr');
+    const id = tr ? tr.dataset.id : null;
+    const dev = () => state.devices.find((x) => x.id === id);
+    try {
+      if (b.dataset.copy) { await navigator.clipboard.writeText($('#' + b.dataset.copy).textContent); toast(t('copied')); }
+      else if (b.dataset.copyDev) { await navigator.clipboard.writeText(overlayQuery(b.dataset.copyDev)); toast(t('copied')); }
+      else if (b.dataset.delta) { await api('POST', '/api/device/' + encodeURIComponent(id), { count: Math.max(0, dev().count + Number(b.dataset.delta)) }); }
+      else if ('setcount' in b.dataset) { const v = prompt(t('promptCount'), dev().count); if (v !== null && v.trim() !== '') await api('POST', '/api/device/' + encodeURIComponent(id), { count: Number(v) }); }
+      else if ('reset' in b.dataset) { if (confirm(t('confirmReset'))) await api('POST', '/api/device/' + encodeURIComponent(id) + '/reset'); }
+      else if ('remove' in b.dataset) { if (confirm(t('confirmRemove'))) await api('DELETE', '/api/device/' + encodeURIComponent(id)); }
+      else if (b.dataset.move) { const ids = state.devices.map((x) => x.id); const i = ids.indexOf(id); const j = i + Number(b.dataset.move); if (j >= 0 && j < ids.length) { [ids[i], ids[j]] = [ids[j], ids[i]]; await api('POST', '/api/reorder', { ids }); } }
+      else if (b.id === 'resetAll') { if (confirm(t('confirmResetAll'))) await api('POST', '/api/reset-all'); }
+    } catch (err) { toast(t('error') + ': ' + err.message); }
+  });
+  document.addEventListener('change', async (e) => {
+    if (e.target.id === 'langSel') { lang = e.target.value; localStorage.setItem('fc-lang', lang); applyI18n(); renderHub(); renderDevices(); return; }
+    const inp = e.target.closest('[data-rename]');
+    if (inp) {
+      const id = inp.closest('tr').dataset.id;
+      const d = state.devices.find((x) => x.id === id);
+      const v = inp.value.trim();
+      try { await api('POST', '/api/device/' + encodeURIComponent(id), { customName: v && v !== d.name ? v : null }); toast(t('saved')); } catch (err) { toast(t('error') + ': ' + err.message); }
+      return;
+    }
+    if (e.target.closest('.opts')) renderUrls();
+  });
+  document.addEventListener('input', (e) => { if (e.target.closest('.opts')) renderUrls(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('[data-rename]')) e.target.blur(); });
+
+  function connect() {
+    const es = new EventSource('/api/events');
+    es.addEventListener('state', (e) => { try { render(JSON.parse(e.data)); } catch (_) {} });
+    es.onerror = () => { es.close(); setTimeout(connect, 2000); };
+  }
+  applyI18n();
+  fetch('/api/state').then((r) => r.json()).then(render).catch(() => {});
+  connect();
+</script>
+</body>
+</html>

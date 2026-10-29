@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_title"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView style="@style/SettingsLabel" android:text="@string/settings_name" />
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:maxLength="80"
+            android:textColor="@color/white"
+            android:importantForAutofill="no" />
+
+        <TextView style="@style/SettingsLabel" android:text="@string/settings_hub" />
+        <RadioGroup
+            android:id="@+id/rgHub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <RadioButton android:id="@+id/rbHubAuto" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/settings_hub_auto" android:textColor="@color/white" />
+            <RadioButton android:id="@+id/rbHubManual" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/settings_hub_manual" android:textColor="@color/white" />
+        </RadioGroup>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <EditText android:id="@+id/etHost" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="3" android:hint="@string/setup_host_hint" android:inputType="textUri" android:textColor="@color/white" android:importantForAutofill="no" />
+            <EditText android:id="@+id/etPort" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="@string/setup_port_hint" android:inputType="number" android:textColor="@color/white" android:importantForAutofill="no" />
+        </LinearLayout>
+
+        <TextView style="@style/SettingsLabel" android:text="@string/settings_detector" />
+        <RadioGroup
+            android:id="@+id/rgDetector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <RadioButton android:id="@+id/rbDetAuto" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/settings_detector_auto" android:textColor="@color/white" />
+            <RadioButton android:id="@+id/rbDetHinge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/detector_hinge" android:textColor="@color/white" />
+            <RadioButton android:id="@+id/rbDetDisplay" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/detector_display" android:textColor="@color/white" />
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                <TextView style="@style/SettingsLabel" android:text="@string/settings_closed_angle" />
+                <EditText android:id="@+id/etClosed" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:textColor="@color/white" android:importantForAutofill="no" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:orientation="vertical">
+                <TextView style="@style/SettingsLabel" android:text="@string/settings_open_angle" />
+                <EditText android:id="@+id/etOpen" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:textColor="@color/white" android:importantForAutofill="no" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView style="@style/SettingsLabel" android:text="@string/settings_multi" />
+        <RadioGroup
+            android:id="@+id/rgMulti"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <RadioButton android:id="@+id/rbMultiAny" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/settings_multi_any" android:textColor="@color/white" />
+            <RadioButton android:id="@+id/rbMultiAll" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/settings_multi_all" android:textColor="@color/white" />
+        </RadioGroup>
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/swShowName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/settings_show_name"
+            android:textColor="@color/white" />
+
+        <TextView style="@style/SettingsLabel" android:text="@string/settings_idle" />
+        <EditText android:id="@+id/etIdle" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:textColor="@color/white" android:importantForAutofill="no" />
+
+        <TextView style="@style/SettingsLabel" android:text="@string/settings_credit" />
+        <EditText android:id="@+id/etCredit" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" android:maxLength="80" android:textColor="@color/white" android:importantForAutofill="no" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="28dp"
+            android:text="@string/save"
+            android:textSize="16sp" />
+    </LinearLayout>
+</ScrollView>

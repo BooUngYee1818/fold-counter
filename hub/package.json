@@ -1,0 +1,14 @@
+{
+  "name": "foldcounter-hub",
+  "version": "0.1.0",
+  "description": "폴더블 카운터 PC 허브 - 폰 앱의 접힘 카운트를 받아 OBS/XSplit 브라우저 소스로 보여줍니다",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
