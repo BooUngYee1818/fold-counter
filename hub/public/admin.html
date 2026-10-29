@@ -69,7 +69,9 @@
       <label><span data-i18n="optAlign"></span><select id="optAlign"><option value="left" data-i18n="left"></option><option value="center" data-i18n="center"></option><option value="right" data-i18n="right"></option></select></label>
       <label><span data-i18n="optName"></span><select id="optName"><option value="1" data-i18n="show"></option><option value="0" data-i18n="numbersOnly"></option></select></label>
       <label><span data-i18n="optOffline"></span><select id="optOffline"><option value="dim" data-i18n="dim"></option><option value="show" data-i18n="asIs"></option><option value="hide" data-i18n="hide"></option></select></label>
-      <label><span data-i18n="optCredit"></span><select id="optCredit"><option value="1" data-i18n="show"></option><option value="0" data-i18n="hide"></option></select></label>
+      <label><span data-i18n="optMode"></span><select id="optMode"><option value="tiles" data-i18n="modeTiles"></option><option value="text" data-i18n="modeText"></option></select></label>
+      <label><span data-i18n="optTilesPos"></span><select id="optTilesPos"><option value="bl" data-i18n="bl"></option><option value="br" data-i18n="br"></option><option value="tl" data-i18n="tl"></option><option value="tr" data-i18n="tr"></option></select></label>
+      <label><span data-i18n="optTile"></span><input type="number" id="optTile" value="140" min="60" max="400"></label>
       <label><span data-i18n="optCreditPos"></span><select id="optCreditPos"><option value="br" data-i18n="br"></option><option value="bl" data-i18n="bl"></option><option value="tr" data-i18n="tr"></option><option value="tl" data-i18n="tl"></option></select></label>
       <label><span data-i18n="optCreditSize"></span><input type="number" id="optCreditSize" value="18" min="8" max="120"></label>
     </div>
@@ -106,8 +108,8 @@
       styleTitle: '자막 모양', optSize: '글자 크기 (px)', optColor: '글자색', optStroke: '외곽선색', optAlign: '정렬',
       left: '왼쪽', center: '가운데', right: '오른쪽', optName: '기기 이름', show: '표시', numbersOnly: '숫자만',
       optOffline: '연결 끊긴 기기', dim: '흐리게', asIs: '그대로', hide: '숨김',
-      optCredit: '제작자 표시', optCreditPos: '제작자 위치', br: '오른쪽 아래', bl: '왼쪽 아래', tr: '오른쪽 위', tl: '왼쪽 위', optCreditSize: '제작자 글자 크기 (px)',
-      styleNote: '위 옵션을 바꾸면 "OBS / XSplit 에 넣을 주소" 와 기기별 주소가 함께 바뀝니다.',
+      optMode: '표시 방식', modeTiles: '네모 타일 (접힘 모션)', modeText: '글자 자막', optTilesPos: '타일 위치', optTile: '타일 크기 (px)', optCreditPos: '제작자 위치', br: '오른쪽 아래', bl: '왼쪽 아래', tr: '오른쪽 위', tl: '왼쪽 위', optCreditSize: '제작자 글자 크기 (px)',
+      styleNote: '위 옵션을 바꾸면 "OBS / XSplit 에 넣을 주소" 와 기기별 주소가 함께 바뀝니다. 제작자 표시(유튜버 @CEO_BooungYee-TeCh 제작)는 항상 작게 표시됩니다.',
       devicesTitle: '기기 목록', resetAll: '모든 카운트 0 으로',
       manualTitle: '폰에서 수동으로 연결할 때', manualNote: '앱이 허브를 자동으로 못 찾으면 (공유기 설정 등) 앱 설정에서 아래 주소 중 하나를 직접 입력하세요.',
       noLan: 'LAN 주소를 찾지 못했습니다. Wi-Fi 또는 유선 연결을 확인하세요.',
@@ -129,8 +131,8 @@
       styleTitle: 'Caption style', optSize: 'Font size (px)', optColor: 'Text color', optStroke: 'Outline color', optAlign: 'Align',
       left: 'Left', center: 'Center', right: 'Right', optName: 'Device name', show: 'Show', numbersOnly: 'Numbers only',
       optOffline: 'Disconnected devices', dim: 'Dim', asIs: 'As is', hide: 'Hide',
-      optCredit: 'Credit', optCreditPos: 'Credit position', br: 'Bottom right', bl: 'Bottom left', tr: 'Top right', tl: 'Top left', optCreditSize: 'Credit font size (px)',
-      styleNote: 'Changing these options updates the URL above and the per-device URLs.',
+      optMode: 'Display', modeTiles: 'Tiles (fold motion)', modeText: 'Text caption', optTilesPos: 'Tiles position', optTile: 'Tile size (px)', optCreditPos: 'Credit position', br: 'Bottom right', bl: 'Bottom left', tr: 'Top right', tl: 'Top left', optCreditSize: 'Credit font size (px)',
+      styleNote: 'Changing these options updates the URL above and the per-device URLs. The small creator credit (made by YouTuber @CEO_BooungYee-TeCh) is always shown.',
       devicesTitle: 'Devices', resetAll: 'Reset all counts to 0',
       manualTitle: 'Connecting a phone manually', manualNote: 'If the app cannot find the hub automatically (router settings etc.), type one of these addresses in the app settings.',
       noLan: 'No LAN address found. Check Wi-Fi or Ethernet.',
@@ -171,7 +173,9 @@
     if ($('#optAlign').value !== 'left') p.set('align', $('#optAlign').value);
     if ($('#optName').value === '0') p.set('name', '0');
     if ($('#optOffline').value !== 'dim') p.set('offline', $('#optOffline').value);
-    if ($('#optCredit').value === '0') p.set('credit', '0');
+    if ($('#optMode').value === 'text') p.set('mode', 'text');
+    if ($('#optTilesPos').value !== 'bl') p.set('tiles', $('#optTilesPos').value);
+    if ($('#optTile').value !== '140') p.set('tile', $('#optTile').value);
     if ($('#optCreditPos').value !== 'br') p.set('creditpos', $('#optCreditPos').value);
     if ($('#optCreditSize').value !== '18') p.set('creditsize', $('#optCreditSize').value);
     if (lang !== 'ko') p.set('lang', lang);

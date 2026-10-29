@@ -91,7 +91,7 @@ class CounterActivity : AppCompatActivity() {
         tvCreditBy = findViewById(R.id.tvCreditBy)
         ivLogo = findViewById(R.id.ivLogo)
 
-        tvCreditBy.text = getString(R.string.credit_prefix) + " " + prefs.creditText.ifBlank { getString(R.string.credit_default) }
+        tvCreditBy.text = prefs.creditText.ifBlank { getString(R.string.credit_default) }
         LogoLoader.load(this)?.let {
             ivLogo.setImageBitmap(it)
             ivLogo.visibility = View.VISIBLE

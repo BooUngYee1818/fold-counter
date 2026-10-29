@@ -78,7 +78,7 @@ struct CounterView: View {
                 Image(uiImage: logo).resizable().scaledToFit().frame(height: 90)
             }
             Text("app_name").font(.title3.bold()).foregroundStyle(.white)
-            Text("\(String(localized: "credit_prefix")) \(prefs.creditText.isEmpty ? String(localized: "credit_default") : prefs.creditText)")
+            Text(prefs.creditText.isEmpty ? String(localized: "credit_default") : prefs.creditText)
                 .font(.subheadline).foregroundStyle(.gray)
         }
         .padding(18)

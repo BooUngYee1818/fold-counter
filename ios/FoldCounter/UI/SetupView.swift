@@ -12,7 +12,7 @@ struct SetupView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 Text("app_name").font(.system(size: 30, weight: .bold)).foregroundStyle(.white)
-                Text("\(String(localized: "credit_prefix")) \(prefs.creditText.isEmpty ? String(localized: "credit_default") : prefs.creditText)")
+                Text(prefs.creditText.isEmpty ? String(localized: "credit_default") : prefs.creditText)
                     .font(.footnote).foregroundStyle(.gray)
                 Text("setup_desc").font(.subheadline).foregroundStyle(.gray).padding(.top, 6)
 

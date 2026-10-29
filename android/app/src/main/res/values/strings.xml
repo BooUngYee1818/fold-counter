@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Fold Counter</string>
     <string name="credit_prefix">made by</string>
-    <string name="credit_default">YouTube @CEO_BooungYee-TeCh</string>
+    <string name="credit_default">made by YouTuber @CEO_BooungYee-TeCh</string>
 
     <!-- notification -->
     <string name="notif_channel">Fold detection</string>

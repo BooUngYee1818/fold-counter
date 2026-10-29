@@ -15,6 +15,8 @@ Built for every foldable, old and new: flip style, book style, dual screen and t
 > **Status**: Android app + PC hub are released. An **iPhone test build** (unsigned IPA) is included; it has not been verified on a real foldable iPhone yet.
 > An APK is Android-only and cannot be installed on an iPhone. See the "iPhone" section below.
 
+![Demo page in action: phones folding inside small tiles while the numbers go up](docs/demo.gif)
+
 | Folder | What it is |
 |---|---|
 | `hub/` | PC hub server (Node.js, no dependencies). Overlay, admin page, OBS auto-connect, fake-phone simulator |
@@ -113,6 +115,9 @@ The iPhone app lives in `ios/` and has the same screens and hub protocol as the 
 - **Cannot pin the app**: enable Settings › Security › Pin windows (Screen pinning).
 - **Count does not go up**: check in Diagnostics that the angle changes. If the device does not open fully, lower the "open" threshold from 150 to about 130. Without a sensor the app falls back to screen state automatically.
 - **Want a different caption name**: edit the name field in the admin page (it updates on the phone too).
+
+## About the creator credit
+This program is free, and in return it carries a small creator credit to promote the author's YouTube channel **@CEO_BooungYee-TeCh**. A small logo with "made by YouTuber @CEO_BooungYee-TeCh" sits in a corner of the stream overlay, and on the phone the same credit appears after a few idle minutes and disappears when the phone moves. It is sized to stay out of the way; position and size are adjustable in the admin page and the text in the app settings.
 
 ## License
 MIT License. See `LICENSE`.

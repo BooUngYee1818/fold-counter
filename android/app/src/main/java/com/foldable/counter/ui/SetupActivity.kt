@@ -57,7 +57,7 @@ class SetupActivity : AppCompatActivity() {
         val etPort = findViewById<EditText>(R.id.etPort)
 
         findViewById<TextView>(R.id.tvCredit).text =
-            getString(R.string.credit_prefix) + " " + prefs.creditText.ifBlank { getString(R.string.credit_default) }
+            prefs.creditText.ifBlank { getString(R.string.credit_default) }
         etName.setText(prefs.deviceName.ifBlank { DeviceNames.detect(this) })
 
         val hinge = HingeAngleDetector.isAvailable(this)

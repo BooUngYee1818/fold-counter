@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">폴더블 카운터</string>
     <string name="credit_prefix">제작</string>
-    <string name="credit_default">YouTube @CEO_BooungYee-TeCh</string>
+    <string name="credit_default">유튜버 @CEO_BooungYee-TeCh 제작</string>
 
     <string name="notif_channel">접힘 감지</string>
     <string name="notif_title">폴더블 카운터 실행 중</string>

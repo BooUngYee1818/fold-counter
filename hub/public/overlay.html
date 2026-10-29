@@ -52,10 +52,23 @@
   .credit .app { font-weight: 800; }
   .credit .by { font-weight: 600; font-size: 0.82em; opacity: 0.9; }
   .credit[hidden] { display: none; }
+  /* 타일 모드 (기본): 기기마다 반투명 네모 + 접히는 폰 + 숫자 */
+  #tiles { position: fixed; display: grid; grid-template-columns: repeat(var(--cols), var(--tile)); gap: 0.35em; padding: 0.6em 0.8em; align-items: end; }
+  #tiles.br { right: 0; bottom: 0; } #tiles.bl { left: 0; bottom: 0; } #tiles.tr { right: 0; top: 0; } #tiles.tl { left: 0; top: 0; }
+  .tile { width: var(--tile); aspect-ratio: 1.12; border-radius: 0.5em; background: rgba(0,0,0,0.42); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); border: 1px solid rgba(255,255,255,0.16); position: relative; overflow: hidden; container-type: size; -webkit-text-stroke: 0; text-shadow: none; }
+  .tile.offline { opacity: var(--offline-opacity); }
+  .tile .mn { position: absolute; top: 3px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.75); font-size: clamp(6px, 8cqw, 11px); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px; }
+  .tile .ph { position: absolute; left: 50%; top: 56%; transform: translate(-50%, -50%); width: 74%; height: 58%; border-radius: 5px; background: #000; border: 1.5px solid #4a4b55; }
+  .tile .ph::after { content: ""; position: absolute; left: 50%; top: 3px; bottom: 3px; width: 1px; background: rgba(255,255,255,0.12); }
+  .tile .ph.foldanim { animation: foldcycle 0.9s cubic-bezier(.2,.8,.2,1); }
+  @keyframes foldcycle { 0% { width: 74%; } 40% { width: 30%; } 60% { width: 30%; } 100% { width: 74%; } }
+  .tile .mc { position: absolute; left: 0; right: 0; top: 56%; transform: translateY(-50%); text-align: center; color: #fff; font-weight: 800; font-size: min(46cqh, 40cqw); line-height: 1; text-shadow: 0 1px 4px rgba(0,0,0,0.9); }
+  .tile .mc.pop { animation: pop 0.35s ease-out; }
 </style>
 </head>
 <body>
 <div id="list"></div>
+<div id="tiles" class="bl" hidden></div>
 <div id="credit" class="credit br" hidden>
   <img id="creditLogo" alt="" hidden>
   <div>
@@ -69,12 +82,14 @@
   //   /overlay?device=<기기ID>          특정 기기 하나만
   //   /overlay?name=0                    기기 이름 숨기고 숫자만
   //   /overlay?offline=hide              연결 끊긴 기기 숨김
-  //   /overlay?credit=0                  제작자 표시 끔   creditpos=br|bl|tr|tl   creditsize=18   creditname=@...
+  //   /overlay?mode=text                 글자 자막 모드 (기본은 tiles: 기기마다 반투명 네모 + 접힘 모션 + 숫자)
+  //   /overlay?tiles=bl&cols=3&tile=140  네모 위치(bl|br|tl|tr), 열 수, 네모 크기(px)
+  //   /overlay?creditpos=br  creditsize=18  creditname=@...   제작자 표시는 항상 켜져 있습니다
   //   /overlay?lang=en                   표시 언어 (기본: 브라우저 언어)
   const q = new URLSearchParams(location.search);
   const color = (v, d) => { if (!v) return d; return /^[0-9a-f]{3,8}$/i.test(v) ? '#' + v : v; };
   const lang = (q.get('lang') || navigator.language || 'ko').toLowerCase().startsWith('ko') ? 'ko' : 'en';
-  const L = { ko: { app: '폴더블 카운터', by: '제작' }, en: { app: 'Fold Counter', by: 'made by' } }[lang];
+  const L = { ko: { app: '폴더블 카운터', by: '유튜버 {name} 제작' }, en: { app: 'Fold Counter', by: 'made by YouTuber {name}' } }[lang];
   const opt = {
     device: q.get('device'),
     size: (q.get('size') || '72').replace(/[^0-9.]/g, '') + 'px',
@@ -86,7 +101,10 @@
     font: q.get('font') || "'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', sans-serif",
     offline: q.get('offline') || 'dim',
     bg: color(q.get('bg'), 'transparent'),
-    credit: q.get('credit') !== '0',
+    mode: q.get('mode') === 'text' ? 'text' : 'tiles',
+    tilesPos: ['br', 'bl', 'tr', 'tl'].includes(q.get('tiles')) ? q.get('tiles') : 'bl',
+    cols: Math.max(1, Math.min(8, parseInt(q.get('cols') || '3', 10) || 3)),
+    tile: (q.get('tile') || '140').replace(/[^0-9.]/g, '') + 'px',
     creditPos: ['br', 'bl', 'tr', 'tl'].includes(q.get('creditpos')) ? q.get('creditpos') : 'br',
     creditSize: (q.get('creditsize') || '18').replace(/[^0-9.]/g, '') + 'px',
     creditName: q.get('creditname') || '@CEO_BooungYee-TeCh',
@@ -101,6 +119,8 @@
   root.setProperty('--bg', opt.bg);
   root.setProperty('--offline-opacity', opt.offline === 'dim' ? '0.5' : '1');
   root.setProperty('--creditsize', opt.creditSize);
+  root.setProperty('--cols', opt.cols);
+  root.setProperty('--tile', opt.tile);
 
   const list = document.getElementById('list');
   const prev = {};
@@ -110,6 +130,32 @@
     let devs = s.devices || [];
     if (opt.device) devs = devs.filter((d) => d.id === opt.device);
     if (opt.offline === 'hide') devs = devs.filter((d) => d.online);
+    if (opt.mode === 'tiles') {
+      const box = document.getElementById('tiles');
+      box.className = opt.tilesPos; box.hidden = false; list.hidden = true;
+      // 기기별 타일: 카운트가 오르면 폰이 접혔다 펼쳐지는 모션
+      const seen = new Set();
+      for (const d of devs) {
+        seen.add(d.id);
+        let t = box.querySelector(`[data-id="${CSS.escape(d.id)}"]`);
+        if (!t) {
+          t = el('div', 'tile'); t.dataset.id = d.id;
+          t.append(el('div', 'mn', d.displayName), el('div', 'ph'), el('div', 'mc', String(d.count)));
+          box.append(t);
+        }
+        t.classList.toggle('offline', !d.online);
+        t.querySelector('.mn').textContent = d.displayName;
+        const mc = t.querySelector('.mc'), ph = t.querySelector('.ph');
+        if (prev[d.id] !== undefined && prev[d.id] !== d.count) {
+          ph.classList.remove('foldanim'); void ph.offsetWidth; ph.classList.add('foldanim');
+          mc.classList.remove('pop'); void mc.offsetWidth; mc.classList.add('pop');
+        }
+        mc.textContent = String(d.count);
+        prev[d.id] = d.count;
+      }
+      for (const t of [...box.children]) if (!seen.has(t.dataset.id)) t.remove();
+      return;
+    }
     list.innerHTML = '';
     for (const d of devs) {
       const row = el('div', 'row' + (d.online ? '' : ' offline'));
@@ -124,11 +170,10 @@
 
   // ---- 제작자 표시 (프로그램명 위, 제작자 아래) ----
   function setupCredit() {
-    if (!opt.credit) return;
     const box = document.getElementById('credit');
     box.className = 'credit ' + opt.creditPos;
     document.getElementById('creditApp').textContent = L.app;
-    document.getElementById('creditBy').textContent = L.by + ' ' + opt.creditName;
+    document.getElementById('creditBy').textContent = L.by.replace('{name}', opt.creditName);
     box.hidden = false;
     // public/logo.png 가 있으면 녹색(크로마키) 배경을 빼고 로고로 표시
     const img = new Image();
