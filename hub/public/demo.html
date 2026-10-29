@@ -62,9 +62,17 @@
   .yt { background: var(--stage); border-radius: 14px; overflow: hidden; border: 1px solid #1f2230; }
   .player { position: relative; aspect-ratio: 16/9; background: radial-gradient(120% 90% at 70% 110%, #2a3350 0%, #0e1119 55%, #06070a 100%); overflow: hidden; }
   .player .desk { position: absolute; left: 0; right: 0; bottom: 0; height: 34%; background: linear-gradient(180deg, rgba(60,45,30,.0), rgba(90,65,40,.55)); }
-  .player .hand { position: absolute; right: 12%; bottom: 10%; width: 30%; aspect-ratio: 1.2; }
-  .player .hand .mini { width: 100%; height: 100%; border-radius: 12px; background: #000; border: 3px solid #2a2b31; display: flex; align-items: center; justify-content: center; color: #fff; font-family: "Archivo Black", sans-serif; font-size: clamp(16px, 5vw, 46px); transition: width .4s; overflow: hidden; position: relative; }
-  .player .hand .mini.cover { width: 44%; margin-left: 28%; }
+  .player .bgimg { position: absolute; inset: 0; background-size: cover; background-position: center; }
+  .player .minis { position: absolute; right: 10px; bottom: 36px; width: 38%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px 6px; justify-items: center; align-items: end; }
+  .mini { width: 100%; aspect-ratio: 1.2; border-radius: 6px; background: #000; border: 1.5px solid #34353c; box-shadow: 0 3px 12px rgba(0,0,0,.65); position: relative; overflow: hidden; transition: width .4s cubic-bezier(.2,.8,.2,1), aspect-ratio .4s; display: flex; align-items: center; justify-content: center; container-type: size; }
+  .mini.cover { width: 40%; }
+  .mini.flip.cover { width: 56%; aspect-ratio: 1; }
+  .mini .mn { position: absolute; top: 2px; left: 0; right: 0; text-align: center; color: #9e9e9e; font-size: clamp(5px, 8.5cqw, 8px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; }
+  .mini .mc { font-family: "Archivo Black", "Arial Black", sans-serif; color: #fff; font-size: min(62cqh, 58cqw); line-height: 1; transition: transform .2s; margin-top: 4px; }
+  .mini .mc.pop { transform: scale(1.2); }
+  .mini .hl { position: absolute; left: 50%; top: 3px; bottom: 3px; width: 1px; background: rgba(255,255,255,.1); }
+  .ovcredit img { height: 2.4em; width: auto; vertical-align: middle; margin-right: .35em; }
+  label.b { display: inline-flex; align-items: center; }
   .player .live { position: absolute; top: 12px; right: 12px; background: #e62117; color: #fff; font-weight: 900; font-size: 12px; padding: 4px 9px; border-radius: 6px; letter-spacing: .05em; }
   .player .viewers { position: absolute; top: 12px; right: 76px; background: rgba(0,0,0,.55); color: #fff; font-size: 12px; padding: 4px 9px; border-radius: 6px; }
   .overlay { position: absolute; left: 14px; top: 12px; font-family: "Noto Sans KR", "Segoe UI", sans-serif; font-weight: 900; color: #fff; font-size: clamp(16px, 3.2vw, 34px); line-height: 1.15; -webkit-text-stroke: 0.07em #000; paint-order: stroke fill; text-shadow: 0 2px 10px rgba(0,0,0,.55); }
@@ -143,20 +151,25 @@
       <h2 data-i="liveTitle"></h2>
       <div class="yt">
         <div class="player">
+          <div class="bgimg" id="bgimg"></div>
           <div class="desk"></div>
-          <div class="hand"><div class="mini" id="mini"><span id="miniNum">0</span></div></div>
+          <div class="minis" id="minis"></div>
           <div class="viewers">👁 1,284</div>
           <div class="live">LIVE</div>
           <div class="overlay" id="overlay"></div>
-          <div class="ovcredit" id="ovCredit"><span data-i="appName"></span><small id="ovBy"></small></div>
+          <div class="ovcredit" id="ovCredit"><img id="ovLogo" alt="" hidden><span data-i="appName"></span><small id="ovBy"></small></div>
         </div>
         <div class="ytbar"><div class="av"></div><div><b data-i="streamTitle"></b><br><span data-i="streamer"></span></div></div>
         <div class="chat" id="chat"></div>
       </div>
       <div class="devs">
-        <button class="b" id="btnSecond"></button>
-        <span class="note" style="margin:0" data-i="liveNote"></span>
+        <button class="b primary" id="btnAdd"></button>
+        <button class="b" id="btnRemove"></button>
+        <label class="b" id="bgLabel"><span data-i="bgBtn"></span><input type="file" id="bgFile" accept="image/*" hidden></label>
+        <label class="b" id="logoLabel"><span data-i="logoBtn"></span><input type="file" id="logoFile" accept="image/*" hidden></label>
+        <button class="b" id="btnBgReset"></button>
       </div>
+      <p class="note" data-i="liveNote"></p>
     </section>
   </div>
 
@@ -194,7 +207,7 @@
       ruleClosed: "<b>30° 이하</b>접힘으로 판정", ruleHalf: "<b>31° ~ 149°</b>반쯤 접힘, 카운트 안 함", ruleOpen: "<b>150° 이상</b>펼침, 접혀 있었다면 +1",
       phoneNote: "슬라이더를 왼쪽 끝까지 끌면 접힘, 다시 오른쪽 끝까지 끌면 1이 올라갑니다. 접었을 때는 커버 화면 크기로 바뀌면서 숫자가 그대로 보입니다(폰 설정에서 '접어도 앱 계속 쓰기'를 켠 경우).",
       streamTitle: "갤럭시 Z 폴드7 10,000번 접기 도전 🔥", streamer: "라이브 중 · 폴더블 카운터 사용",
-      second: "두 번째 폰 추가 (Z Flip7)", secondOff: "두 번째 폰 빼기", liveNote: "여러 대를 연결하면 자막에 한 줄씩 추가됩니다. 오른쪽 아래 제작자 표시는 방송 화면을 가리지 않게 작게 들어갑니다.",
+      add: "기기 추가", remove: "기기 제거", bgBtn: "방송 화면 이미지 넣기", logoBtn: "로고 넣기", bgReset: "기본 화면", liveNote: "기기는 몇 대든 연결됩니다. 기기를 추가하면 자막에 한 줄, 오른쪽 아래에 작은 폰 화면이 하나씩 늘어나며 3열로 쌓입니다. 추가된 기기는 각자 알아서 접혔다 펼쳐집니다. '방송 화면 이미지 넣기'로 본인 방송 화면을, '로고 넣기'로 로고(녹색 배경 자동 제거)를 입혀볼 수 있습니다. 이미지는 이 화면에서만 쓰이고 어디에도 올라가지 않습니다.",
       shotsTitle: "실제 앱 캡처 (안드로이드 16 폴더블 에뮬레이터)", shotOpen: "펼친 상태 · 내부 화면 (2208×1840)", shotFolded: "접은 상태 · 커버 화면 (1080×2092) — 같은 숫자가 그대로 표시됨",
       shotsNote: "에뮬레이터라 기기 이름이 sdk_gphone64_arm64 로 보입니다. 실제 폰에서는 Galaxy Z Fold7 처럼 제품명이 자동으로 들어갑니다.",
       faqTitle: "자주 묻는 것", q1: "접혀 있는 동안에도 세나요?", a1: "네. 감지는 화면이 아니라 뒤에서 도는 서비스가 하기 때문에 화면이 꺼져 있어도 셉니다. 숫자는 '접힘 → 펼침' 순간에 올라갑니다.",
@@ -214,7 +227,7 @@
       ruleClosed: "<b>≤ 30°</b>counts as closed", ruleHalf: "<b>31° – 149°</b>half open, not counted", ruleOpen: "<b>≥ 150°</b>open; +1 if it was closed",
       phoneNote: "Drag the slider all the way left to fold, then all the way right to unfold: the count goes up by one. While folded the phone switches to the cover-screen size and keeps showing the number (when 'continue apps on cover screen' is enabled on the phone).",
       streamTitle: "Galaxy Z Fold7 — 10,000 fold challenge 🔥", streamer: "Live now · using Fold Counter",
-      second: "Add a second phone (Z Flip7)", secondOff: "Remove second phone", liveNote: "Each connected phone adds a line to the caption. The small credit in the corner stays out of the way of the stream.",
+      add: "Add device", remove: "Remove device", bgBtn: "Set stream background", logoBtn: "Set logo", bgReset: "Default background", liveNote: "Any number of phones can connect. Each added device adds a caption line and a small phone screen stacked in a 3-column grid at the bottom right; added devices fold and unfold on their own. Use 'Set stream background' to try your own stream frame and 'Set logo' for a logo (green screen removed automatically). Images stay in this page and are never uploaded.",
       shotsTitle: "Real app captures (Android 16 foldable emulator)", shotOpen: "Unfolded · inner screen (2208×1840)", shotFolded: "Folded · cover screen (1080×2092) — same number, still visible",
       shotsNote: "The device name reads sdk_gphone64_arm64 because this is an emulator. On a real phone the product name, e.g. Galaxy Z Fold7, is filled in automatically.",
       faqTitle: "Common questions", q1: "Does it count while the phone is folded?", a1: "Yes. Detection runs in a background service, not on the screen, so it keeps working with the screen off. The number goes up at the closed → open moment.",
@@ -231,7 +244,8 @@
   // ---- 상태 (실제 앱과 같은 규칙) ----
   const CLOSED_T = 30, OPEN_T = 150;
   let count = 0, angle = 180, armed = false, posture = "open", lastCountAt = 0;
-  let second = null; // {count, timer}
+  const EXTRA = [["Galaxy Z Flip7", true], ["Pixel 10 Pro Fold", false], ["OnePlus Open", false], ["Surface Duo 2", false], ["motorola razr 60", true], ["HONOR Magic V3", false], ["Xiaomi MIX Fold 4", false], ["Galaxy Z Fold6", false]]; // 이름, 플립형 여부
+  let extras = []; // {name, flip, count, fold, timer}
   let autoTimer = null, idleShown = false;
 
   function setPosture(a) {
@@ -240,7 +254,7 @@
     if (p === "closed" && !armed) armed = true;
     if (p === "open" && armed) {
       const now = Date.now();
-      if (now - lastCountAt >= 300) { armed = false; lastCountAt = now; count++; pop($("pNum")); pop($("miniNum")); bumpChat(); }
+      if (now - lastCountAt >= 300) { armed = false; lastCountAt = now; count++; pop($("pNum")); pop(document.getElementById("mc_0")); bumpChat(); }
     }
     posture = p;
     render();
@@ -252,11 +266,10 @@
     document.querySelectorAll("[data-i]").forEach((el) => { const k = el.dataset.i; if (t[k] !== undefined) el.innerHTML = t[k]; });
     $("langKo").setAttribute("aria-pressed", lang === "ko"); $("langEn").setAttribute("aria-pressed", lang === "en");
     $("pStatus").textContent = t.status; $("pCreditBy").textContent = t.creditBy; $("ovBy").textContent = t.creditBy;
-    $("pNum").textContent = count; $("miniNum").textContent = count;
+    $("pNum").textContent = count;
     const phone = $("phone");
     phone.classList.toggle("cover", posture === "closed");
     phone.classList.toggle("half", posture === "half");
-    $("mini").classList.toggle("cover", posture === "closed");
     $("angleVal").textContent = angle + "°";
     $("angle").value = angle;
     $("screenVal").textContent = posture === "closed" ? t.cover : t.inner;
@@ -266,12 +279,17 @@
     $("btnAuto").textContent = autoTimer ? t.stop : t.auto;
     $("btnIdle").textContent = idleShown ? t.idleOff : t.idle;
     $("btnReset").textContent = t.reset;
-    $("btnSecond").textContent = second ? t.secondOff : t.second;
+    $("btnAdd").textContent = `${t.add} (+)`; $("btnAdd").disabled = extras.length >= EXTRA.length;
+    $("btnRemove").textContent = t.remove; $("btnRemove").disabled = extras.length === 0;
+    $("btnBgReset").textContent = t.bgReset;
     $("pCredit").hidden = !idleShown; $("pName").hidden = idleShown;
     // 자막
-    const rows = [["Galaxy Z Fold7", count, true]];
-    if (second) rows.push(["Galaxy Z Flip7", second.count, true]);
-    $("overlay").innerHTML = rows.map(([n, c]) => `<div class="row">${n} <span class="c" id="ov_${n.replace(/\W/g, "")}">${c}</span></div>`).join("");
+    const rows = [{ name: "Galaxy Z Fold7", count, fold: posture === "closed", flip: false }, ...extras];
+    $("overlay").innerHTML = rows.map((d, i) => `<div class="row">${d.name} <span class="c" id="ov_${i}">${d.count}</span></div>`).join("");
+    // 오른쪽 아래 작은 폰 화면들 (3열)
+    const minis = $("minis");
+    const html = rows.map((d, i) => `<div class="mini${d.flip ? " flip" : ""}${d.fold ? " cover" : ""}" data-i-dx="${i}"><div class="hl"></div><div class="mn">${d.name}</div><div class="mc" id="mc_${i}">${d.count}</div></div>`).join("");
+    if (minis.dataset.sig !== html) { minis.innerHTML = html; minis.dataset.sig = html; }
   }
 
   // 슬라이더/버튼
@@ -294,11 +312,26 @@
     autoTimer = setTimeout(cycle, 0); render();
   });
   $("btnIdle").addEventListener("click", () => { idleShown = !idleShown; render(); });
-  $("btnReset").addEventListener("click", () => { count = 0; if (second) second.count = 0; render(); });
-  $("btnSecond").addEventListener("click", () => {
-    if (second) { clearInterval(second.timer); second = null; render(); return; }
-    second = { count: 0, timer: setInterval(() => { if (second) { second.count++; render(); const el = document.getElementById("ov_GalaxyZFlip7"); if (el) pop(el); } }, 2600) };
-    render();
+  $("btnReset").addEventListener("click", () => { count = 0; extras.forEach((d) => { d.count = 0; }); render(); });
+  function scheduleExtra(d) {
+    d.timer = setTimeout(() => {
+      d.fold = true; render();
+      d.timer = setTimeout(() => {
+        d.fold = false; d.count++; render();
+        const idx = extras.indexOf(d) + 1;
+        pop(document.getElementById("mc_" + idx)); pop(document.getElementById("ov_" + idx));
+        scheduleExtra(d);
+      }, 650);
+    }, 2200 + Math.random() * 2800);
+  }
+  $("btnAdd").addEventListener("click", () => {
+    if (extras.length >= EXTRA.length) return;
+    const [name, flip] = EXTRA[extras.length];
+    const d = { name, flip, count: 0, fold: false, timer: null };
+    extras.push(d); scheduleExtra(d); render();
+  });
+  $("btnRemove").addEventListener("click", () => {
+    const d = extras.pop(); if (d) clearTimeout(d.timer); render();
   });
   $("langKo").addEventListener("click", () => { lang = "ko"; try { localStorage.setItem("fc-demo-lang", lang); } catch (e) {} render(); seedChat(); });
   $("langEn").addEventListener("click", () => { lang = "en"; try { localStorage.setItem("fc-demo-lang", lang); } catch (e) {} render(); seedChat(); });
@@ -310,6 +343,29 @@
   function seedChat() { $("chat").innerHTML = [0, 1, 2].map(chatLine).join(""); chatIdx = 3; }
   function bumpChat() { if (count % 3 !== 0) return; const c = $("chat"); c.insertAdjacentHTML("beforeend", chatLine(chatIdx++)); while (c.children.length > 5) c.removeChild(c.firstChild); }
 
+  // 방송 화면 이미지 / 로고 입히기 (이 페이지 안에서만 사용)
+  $("bgFile").addEventListener("change", (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const r = new FileReader(); r.onload = () => { $("bgimg").style.backgroundImage = `url(${r.result})`; }; r.readAsDataURL(f);
+  });
+  $("btnBgReset").addEventListener("click", () => { $("bgimg").style.backgroundImage = ""; $("ovLogo").hidden = true; $("ovLogo").src = ""; });
+  $("logoFile").addEventListener("change", (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.createElement("canvas"); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+      const ctx = cv.getContext("2d"); ctx.drawImage(img, 0, 0);
+      const id = ctx.getImageData(0, 0, cv.width, cv.height), px = id.data;
+      for (let i = 0; i < px.length; i += 4) { const g = px[i + 1] - Math.max(px[i], px[i + 2]); if (g > 60) px[i + 3] = 0; else if (g > 20) px[i + 3] = Math.round(px[i + 3] * (1 - (g - 20) / 40)); }
+      ctx.putImageData(id, 0, 0);
+      $("ovLogo").src = cv.toDataURL("image/png"); $("ovLogo").hidden = false;
+      URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(f);
+  });
+
+  // 처음부터 폰 3대가 보이도록
+  for (let i = 0; i < 2; i++) { const [name, flip] = EXTRA[i]; const d = { name, flip, count: 3 + i * 2, fold: false, timer: null }; extras.push(d); scheduleExtra(d); }
   seedChat(); render();
 })();
 </script>
